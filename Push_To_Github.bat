@@ -1,4 +1,4 @@
-@echo off
+@echo on
 
 set /p id=Enter NAME for commit (Version X.Y) (X - Current Gate , Y - Increment from previous commit in current Gate): 
 
