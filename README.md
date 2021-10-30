@@ -1,6 +1,8 @@
 # Gallagher-Station-Museum-Exhibit
 A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station.
 
+![0607_ky_gallagher_station_plant](https://user-images.githubusercontent.com/72700028/139541656-05c52c4c-2b8d-4746-b4ec-811eb962cbc5.jpg)
+
 I tried to make this as easy as possible for everyone in the group.
 
 Watch a few vids on Github. Here's a guy thats not boring:
@@ -15,8 +17,8 @@ Default settings throughout the installation process.
 
 I made some excecutable files to make all of this super simple if you want to work on this on your computer, and not on the Github website.
 
-Download "run_once_then_delete.bat", place it at the location that you want the Gallagher files to be downloaded and based from, and run it.
-You can then delete that excecutable, as well as the one downloaded in the folder. The other two .bat files you will be using for further downloads of the code, and uploads to Github.
+Download "run_once_then_delete.bat" from Discord, place it at the location that you want the Gallagher files to be downloaded and based from, and run it.
+You can then delete that excecutable, it is no longer necessary. The other two .bat files you will be using for further downloads of the code, and uploads to Github.
 
 How to use the excecutables:
 When **beginnng** you work on a portion of code, run the "Pull_From_Github.bat" file. This will download the latest version of the master branch of code for you to work on. You would then work on your own computer from the files that were downloaded in any text editor or software that you prefer. Do not change the order, name, or location of the files in the folder.
