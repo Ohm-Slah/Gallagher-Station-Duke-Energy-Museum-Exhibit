@@ -25,6 +25,8 @@ When **beginnng** you work on a portion of code, run the "Pull_From_Github.bat" 
 If you are returning to your code after working on it, **DO NOT** run the "Pull_From_Github.bat" file, this will delete all of your progress of what you have on your computer.
 If you don't want to risk anything, you can always just work on your code from the Github website here, but from *your* branch, not the master branch.
 
-When you are done working on your code, run the "Push_To_Github.bat" file. Follow the prompts to the best of your ability. This will then upload your code to Github. If the code you uploaded is the finished product of your task, create a pull request in the pull request tab of Github. This would allow me to check your work and add it to the master branch throughout this process.
+When you are done working on your code, run the "Push_To_Github.bat" file. Follow the prompts to the best of your ability. This will then upload your code to Github. If the code you uploaded is the finished product of your task, create a pull request in the pull request tab of Github. This would allow me to check your work and add it to the master branch throughout this process. There are no issues with running this file just to back up what you currently have, and work on the rst later. Again, just **DONT** re-reun the "Pull_From_Github.bat" file!! It will download what is on here on the master branch, and will overwrite anything that you had in the folder that is different from it. 
+
+These excecutables are easy, but *powerful*, and can sometimes be too much so. Just be cautious, and have some understanding what you're doing.
 
 If you have any questions or issues, please let me know. It can be a bit crazy and scary at first, but once you get it, you *get* it. 
