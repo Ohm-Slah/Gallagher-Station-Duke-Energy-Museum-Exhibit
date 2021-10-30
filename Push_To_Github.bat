@@ -6,7 +6,7 @@ set /p branch=Enter branch for pull request (You first name):
 
 git commit -a -m "%id%"
 git push -u origin master:%branch%
-git request-pull master:%branch% https://github.com/turtlebrosforever/Gallagher-Station-Duke-Energy-Museum-Exhibit.git
+git request-pull "HEAD" https://github.com/turtlebrosforever/Gallagher-Station-Duke-Energy-Museum-Exhibit.git
 
 
 
