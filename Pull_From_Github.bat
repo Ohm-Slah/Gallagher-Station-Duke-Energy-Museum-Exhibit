@@ -1,4 +1,4 @@
-@echo on
+@echo off
 
 git pull https://github.com/turtlebrosforever/Gallagher-Station-Duke-Energy-Museum-Exhibit.git
 
