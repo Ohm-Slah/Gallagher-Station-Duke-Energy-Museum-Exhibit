@@ -5,7 +5,7 @@ set /p id=Enter NAME for commit (Version X.Y) (X - Current Gate , Y - Increment 
 set /p branch=Enter branch for pull request (You first name): 
 
 git commit -a -m "%id%"
-git push -u origin master:%branch%
+git push -u origin main:%branch%
 git request-pull "HEAD" https://github.com/turtlebrosforever/Gallagher-Station-Duke-Energy-Museum-Exhibit.git
 
 
