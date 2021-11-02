@@ -2,7 +2,7 @@
 
 set /p id=Enter NAME for commit (Version X.Y) (X - Current Gate , Y - Increment from previous commit in current Gate): 
 
-set /p branch=Enter branch for pull request (You first name): 
+set /p branch=Enter branch for pull request (The one you created): 
 
 git commit -a -m "%id%"
 git push -u origin main:%branch%
