@@ -1,5 +1,5 @@
 # Gallagher-Station-Museum-Exhibit
-A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station, created by Purdue EoT students.
+A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station, created by Purdue Polytechnic SoET students.
 
 ![0607_ky_gallagher_station_plant](https://user-images.githubusercontent.com/72700028/139541656-05c52c4c-2b8d-4746-b4ec-811eb962cbc5.jpg)
 
