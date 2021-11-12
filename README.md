@@ -1,5 +1,5 @@
 # Gallagher-Station-Museum-Exhibit
-A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station.
+A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station, created by Purdue EoT students.
 
 ![0607_ky_gallagher_station_plant](https://user-images.githubusercontent.com/72700028/139541656-05c52c4c-2b8d-4746-b4ec-811eb962cbc5.jpg)
 
@@ -27,6 +27,6 @@ If you don't want to risk anything, you can always just work on your code from t
 
 When you are done working on your code, create a branch with a memorable name on Github, then run the "Push_To_Github.bat" file on your computer. Follow the prompts to the best of your ability. This will then upload your code to Github. If the code you uploaded is the finished product of your task, create a pull request in the pull request tab of Github. This would allow everyone to check your work and add it to the master branch throughout this process. There are no issues with running this file just to back up what you currently have, and work on the rst later. Again, just **DONT** re-reun the "Pull_From_Github.bat" file!! It will download what is on here on the master branch, and will overwrite anything that you had in the folder that is different from it. 
 
-These excecutables are easy, but *powerful*, and can sometimes be too much so. Just be cautious, and have some understanding what you're doing.
+These excecutables are easy, but *powerful*, and can sometimes be too much so. Just be cautious, and have some understanding of what you're doing.
 
 If you have any questions or issues, please let me know. It can be a bit crazy and scary at first, but once you get it, you *get* it. 
