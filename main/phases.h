@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <Stepper.h>
+#include <Encoder.h>
 
 void initialization();
 bool phaseZero();
