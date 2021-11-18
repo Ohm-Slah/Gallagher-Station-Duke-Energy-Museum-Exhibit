@@ -140,3 +140,10 @@ void error()
     delay(200);
   }
 }
+
+void LEDControl (byte LEDstate) {
+/*
+ *  Each bit is a LED state 0b00000000 
+ */
+
+}
