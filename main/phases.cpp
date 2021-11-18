@@ -140,41 +140,82 @@ void error()
     delay(200);
   }
 }
-void ServoSetup()
-{
-  // Declare pins as Outputs
-  pinMode(stepPin, OUTPUT);
-  pinMode(dirPin, OUTPUT);
-}
+void ServoSetup() //Run these once 
+    {
+      // Declare pins as Outputs
+      pinMode(stepPin, OUTPUT);
+      pinMode(dirPin, OUTPUT);
+    }
 
 
-void ServoMove (unint_8 Servo) 
-{
+void ServoMove (uint8_t Servo)   //Function for the servo motor 
+    {
+      // Set motor direction clockwise
+      digitalWrite(dirPin, HIGH);
+
+      // Spin motor slowly
+      for(int x = 0; x < stepsPerRevolution; x++)
+      {
+        digitalWrite(stepPin, HIGH);
+        delayMicroseconds(2000);
+        digitalWrite(stepPin, LOW);
+        delayMicroseconds(2000);
+      }
+      delay(1000); // Wait a second
+
+      // Set motor direction counterclockwise
+      digitalWrite(dirPin, LOW);
+
+      // Spin motor quickly
+      for(int x = 0; x < stepsPerRevolution; x++)
+      {
+        digitalWrite(stepPin, HIGH);
+        delayMicroseconds(1000);
+        digitalWrite(stepPin, LOW);
+        delayMicroseconds(1000);
+      }
+      delay(1000); // Wait a second
+    }
+
+//integers for the stepper motor 
+const int dirPin = 2;
+const int stepPin = 3;
+const int stepsPerRevolution = 200;
+
+void StepperSetup()
+    {
+        // Declare pins as Outputs
+        pinMode(stepPin, OUTPUT);
+        pinMode(dirPin, OUTPUT);
+    }
+
+void StepperMove(uint8_t Stepper) 
+    {
   // Set motor direction clockwise
-  digitalWrite(dirPin, HIGH);
+        digitalWrite(dirPin, HIGH);
 
-  // Spin motor slowly
+        // Spin motor slowly
   for(int x = 0; x < stepsPerRevolution; x++)
-  {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(2000);
-  }
-  delay(1000); // Wait a second
-  
-  // Set motor direction counterclockwise
-  digitalWrite(dirPin, LOW);
+        {
+          digitalWrite(stepPin, HIGH);
+          delayMicroseconds(2000);
+          digitalWrite(stepPin, LOW);
+          delayMicroseconds(2000);
+        }
+        delay(1000); // Wait a second
 
-  // Spin motor quickly
+        // Set motor direction counterclockwise
+        digitalWrite(dirPin, LOW);
+
+        // Spin motor quickly
+ 
   for(int x = 0; x < stepsPerRevolution; x++)
-  {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(1000);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(1000);
-  }
-  delay(1000); // Wait a second
-
-
+        {
+          digitalWrite(stepPin, HIGH);
+          delayMicroseconds(1000);
+          digitalWrite(stepPin, LOW);
+          delayMicroseconds(1000);
+        }
+    delay(1000); // Wait a second
 }
+
