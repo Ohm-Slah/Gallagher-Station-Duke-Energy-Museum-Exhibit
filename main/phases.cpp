@@ -177,45 +177,4 @@ void ServoMove (uint8_t Servo)   //Function for the servo motor
       delay(1000); // Wait a second
     }
 
-//integers for the stepper motor 
-const int dirPin = 2;
-const int stepPin = 3;
-const int stepsPerRevolution = 200;
-
-void StepperSetup()
-    {
-        // Declare pins as Outputs
-        pinMode(stepPin, OUTPUT);
-        pinMode(dirPin, OUTPUT);
-    }
-
-void StepperMove(uint8_t Stepper) 
-    {
-  // Set motor direction clockwise
-        digitalWrite(dirPin, HIGH);
-
-        // Spin motor slowly
-  for(int x = 0; x < stepsPerRevolution; x++)
-        {
-          digitalWrite(stepPin, HIGH);
-          delayMicroseconds(2000);
-          digitalWrite(stepPin, LOW);
-          delayMicroseconds(2000);
-        }
-        delay(1000); // Wait a second
-
-        // Set motor direction counterclockwise
-        digitalWrite(dirPin, LOW);
-
-        // Spin motor quickly
- 
-  for(int x = 0; x < stepsPerRevolution; x++)
-        {
-          digitalWrite(stepPin, HIGH);
-          delayMicroseconds(1000);
-          digitalWrite(stepPin, LOW);
-          delayMicroseconds(1000);
-        }
-    delay(1000); // Wait a second
-}
 
