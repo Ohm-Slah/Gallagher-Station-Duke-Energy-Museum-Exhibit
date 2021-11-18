@@ -148,10 +148,10 @@ void encoder_setup()
 }
 
 long oldPosition  = -999;
-
+Encoder myEnc(2, 3);
 void encoderMove(uint8_t Encoder) 
 {
-  long newPosition = myEnc.read(2,3);
+  long newPosition = myEnc.read();
   if (newPosition != oldPosition) 
   {
     oldPosition = newPosition;
