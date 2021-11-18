@@ -10,7 +10,9 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+//.h files here
 #include <Arduino.h>
+#include <Stepper.h>
 
 void initialization();
 bool phaseZero();
@@ -19,10 +21,12 @@ bool phaseTwo();
 bool phaseThree();
 bool phaseFour();
 
+
 bool serialResponse(char com[]);
 void failure();
 void completion();
 void sleep();
 void error();
+void ServoMove(); 
 
 #endif
