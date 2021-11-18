@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.cpp"
- * Contributor(s):    Elliot Eickholtz
+ * Contributor(s):    Elliot Eickholtz, Jackson Couch, Andrew Boehm
  * Last edit:         11/17/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
