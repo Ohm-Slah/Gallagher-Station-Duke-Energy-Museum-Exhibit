@@ -140,10 +140,41 @@ void error()
     delay(200);
   }
 }
+void ServoSetup()
+{
+  // Declare pins as Outputs
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+}
 
-void LEDControl (byte LEDstate) {
-/*
- *  Each bit is a LED state 0b00000000 
- */
+
+void ServoMove (unint_8 Servo) 
+{
+  // Set motor direction clockwise
+  digitalWrite(dirPin, HIGH);
+
+  // Spin motor slowly
+  for(int x = 0; x < stepsPerRevolution; x++)
+  {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(2000);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(2000);
+  }
+  delay(1000); // Wait a second
+  
+  // Set motor direction counterclockwise
+  digitalWrite(dirPin, LOW);
+
+  // Spin motor quickly
+  for(int x = 0; x < stepsPerRevolution; x++)
+  {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(1000);
+  }
+  delay(1000); // Wait a second
+
 
 }
