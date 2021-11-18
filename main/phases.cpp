@@ -140,3 +140,21 @@ void error()
     delay(200);
   }
 }
+
+void encoder_setup()
+{
+    Serial.begin(9600);
+  Serial.println("Basic Encoder Test:");
+}
+
+long oldPosition  = -999;
+
+void encoderMove(uint8_t Encoder) 
+{
+  long newPosition = myEnc.read();
+  if (newPosition != oldPosition) 
+  {
+    oldPosition = newPosition;
+    Serial.println(newPosition);
+  }
+}
