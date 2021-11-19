@@ -10,9 +10,7 @@
 #ifndef SETUP_H
 #define SETUP_H
 
-//include .h file here 
 #include <Arduino.h>
-#include <Stepper.h>
 
 void initialization();
 bool phaseZero();
