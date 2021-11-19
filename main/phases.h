@@ -23,6 +23,10 @@ bool phaseThree();
 bool phaseFour();
 
 bool serialResponse(char com[]);
+void ServoSetup(); 
+void ServoMove(uint8_t Servo);
+void StepperMove(); 
+void StepperMove(uint8_t Stepper); 
 void failure();
 void completion();
 void sleep();
