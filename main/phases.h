@@ -3,7 +3,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/18/21
+ * Last edit:         11/19/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -32,5 +32,6 @@ void sleep();
 void error();
 void initSevenSegment();
 void displayDigitalNumber(float value);
+void setDCMotor(uint16_t pwmValue);
 
 #endif
