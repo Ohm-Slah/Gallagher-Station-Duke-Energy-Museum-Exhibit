@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/18/21
+ * Last edit:         11/19/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
@@ -17,7 +17,8 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-  pinMode(13, OUTPUT); //LED pin of Arduino Mega
+  pinMode(LED_ON_BOARD, OUTPUT); //LED pin of Arduino Mega
+  pinMode(MOTOR_PIN, OUTPUT); //DC Motor Pin
   Serial.begin(9600);
   delay(100);
   
@@ -160,4 +161,12 @@ void displayDigitalNumber(float value)
    */
   
   tm.display(value);
+}
+
+void setDCMotor(uint16_t pwmValue)
+{
+  /*
+   * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
+   */
+  analogWrite(pwmValue);
 }
