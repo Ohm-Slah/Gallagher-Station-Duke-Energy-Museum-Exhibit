@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Andrew Boehm, jackson Couch
- * Last edit:         11/17/21
+ * Last edit:         11/18/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -12,6 +12,7 @@
 
 #include <Arduino.h>
 #include <Encoder.h>
+#include <TM1637.h>
 
 
 void initialization();
@@ -28,5 +29,7 @@ void sleep();
 void error();
 void encoder_setup();
 void encoderMove(uint8_t Encoder);
+void initSevenSegment();
+void displayDigitalNumber(float value);
 
 #endif

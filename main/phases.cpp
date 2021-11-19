@@ -1,13 +1,15 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Jackson Couch, Andrew Boehm
- * Last edit:         11/17/21
+ * Last edit:         11/18/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
  */
 
 #include "phases.h"
+
+TM1637 tm(2, 3); //library instantiation for 7-segment display
 
 void initialization() 
 {
@@ -141,6 +143,7 @@ void error()
   }
 }
 
+
 void encoder_setup()
 {
     Serial.begin(9600);
@@ -157,4 +160,25 @@ void encoderMove(uint8_t Encoder)
     oldPosition = newPosition;
     Serial.println(newPosition);
   }
+  
+}
+
+void initSevenSegment()
+{
+  /*
+   * This function runs once at startup and initializes the 7-segment display.
+   */
+  tm.begin();
+  tm.setBrightness(4);
+}
+
+void displayDigitalNumber(float value)
+{
+  /*
+   * This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
+   * Due to it's simplicity, it may be removed at a later date.
+   */
+  
+  tm.display(value);
+
 }
