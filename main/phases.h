@@ -20,8 +20,6 @@ bool phaseThree();
 bool phaseFour();
 
 bool serialResponse(char com[]);
-void ServoMove (unint_8 Servo);
-void ServoSetup(); 
 void failure();
 void completion();
 void sleep();
