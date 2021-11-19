@@ -12,6 +12,9 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+#define LED_ON_BOARD 13
+#define MOTOR_PIN 12
+
 #include <Arduino.h>
 #include <TM1637.h>
 
