@@ -12,7 +12,6 @@
 
 //include .h file here 
 #include <Arduino.h>
-#include <Servo.h>
 #include <Stepper.h>
 
 void initialization();
@@ -23,10 +22,8 @@ bool phaseThree();
 bool phaseFour();
 
 bool serialResponse(char com[]);
+void ServoMove (unint_8 Servo);
 void ServoSetup(); 
-void ServoMove(uint8_t Servo);
-void StepperMove(); 
-void StepperMove(uint8_t Stepper); 
 void failure();
 void completion();
 void sleep();
