@@ -149,11 +149,11 @@ void error()
 
 void encoderRead(uint8_t Encoder) 
 {
-  long newPosition = myEnc.read();
+  long newPosition = myEnc.read(); //returns the accumlated position (new position)
   if (newPosition != oldPosition) 
   {
-    oldPosition = newPosition;
-   // Serial.println(newPosition);
+    oldPosition = newPosition; //If the new postion is not equal to old the new value is set
+   // Serial.println(newPosition); // i dont think this is needed
   }
   
 }
