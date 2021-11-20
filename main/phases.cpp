@@ -168,5 +168,5 @@ void setDCMotor(uint16_t pwmValue)
   /*
    * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
    */
-  analogWrite(pwmValue);
+  analogWrite(MOTOR_PIN, pwmValue);
 }
