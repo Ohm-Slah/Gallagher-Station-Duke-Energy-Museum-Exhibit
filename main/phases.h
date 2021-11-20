@@ -27,8 +27,7 @@ void failure();
 void completion();
 void sleep();
 void error();
-void encoder_setup();
-void encoderMove(uint8_t Encoder);
+void encoderRead(uint8_t Encoder);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 
