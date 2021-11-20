@@ -143,35 +143,35 @@ void error()
 void ServoSetup() //Run these once 
     {
       // Declare pins as Outputs
-      pinMode(stepPin, OUTPUT);
-      pinMode(dirPin, OUTPUT);
+      pinMode(12, OUTPUT); //sets pin 12 as the output for steps 
+      pinMode(13, OUTPUT); //sets pin 13 as the output for direction 
     }
 
 
 void ServoMove (uint8_t Servo)   //Function for the servo motor 
     {
       // Set motor direction clockwise
-      digitalWrite(dirPin, HIGH);
+      digitalWrite(13, HIGH); // 13 is the direction pin
 
       // Spin motor slowly
-      for(int x = 0; x < stepsPerRevolution; x++)
+      for(int x = 0; x < 200; x++) //200 revolutions per minute 
       {
-        digitalWrite(stepPin, HIGH);
+        digitalWrite(12, HIGH); // step pin is 12
         delayMicroseconds(2000);
-        digitalWrite(stepPin, LOW);
+        digitalWrite(12, LOW);
         delayMicroseconds(2000);
       }
       delay(1000); // Wait a second
 
       // Set motor direction counterclockwise
-      digitalWrite(dirPin, LOW);
+      digitalWrite(13, LOW);
 
       // Spin motor quickly
-      for(int x = 0; x < stepsPerRevolution; x++)
+      for(int x = 0; x < 200; x++)
       {
-        digitalWrite(stepPin, HIGH);
+        digitalWrite(12, HIGH);
         delayMicroseconds(1000);
-        digitalWrite(stepPin, LOW);
+        digitalWrite(12, LOW);
         delayMicroseconds(1000);
       }
       delay(1000); // Wait a second
