@@ -147,13 +147,13 @@ void error()
   }
 }
 
-void encoderMove(uint8_t Encoder) 
+void encoderRead(uint8_t Encoder) 
 {
   long newPosition = myEnc.read();
   if (newPosition != oldPosition) 
   {
     oldPosition = newPosition;
-    Serial.println(newPosition);
+   // Serial.println(newPosition);
   }
   
 }
