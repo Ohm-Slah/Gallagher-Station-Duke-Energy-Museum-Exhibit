@@ -10,6 +10,9 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+#define LED_ON_BOARD 13
+#define MOTOR_PIN 12
+  
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
@@ -30,5 +33,7 @@ void error();
 int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
+void setDCMotor(uint16_t pwmValue);
 
 #endif
+
