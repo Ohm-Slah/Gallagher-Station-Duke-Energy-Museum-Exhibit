@@ -12,7 +12,7 @@
 
 //.h files here
 #include <Arduino.h>
-#include <Stepper.h>
+#include <Servo.h>
 
 void initialization();
 bool phaseZero();
