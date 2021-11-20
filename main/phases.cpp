@@ -9,6 +9,10 @@
 
 #include "phases.h"
 
+long oldPosition  = -999; //Sets the Encoder from its original position
+Encoder myEnc(2, 3); //Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. If both pins have interrupt capability, both will be used for best performance. 
+                    //Encoder will also work in low performance polling mode if neither pin has interrupts. 
+
 TM1637 tm(2, 3); //library instantiation for 7-segment display
 
 void initialization() 
@@ -143,9 +147,6 @@ void error()
   }
 }
 
-
-long oldPosition  = -999;
-Encoder myEnc(2, 3);
 void encoderMove(uint8_t Encoder) 
 {
   long newPosition = myEnc.read();
