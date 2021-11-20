@@ -144,12 +144,6 @@ void error()
 }
 
 
-void encoder_setup()
-{
-    Serial.begin(9600);
-  Serial.println("Basic Encoder Test:");
-}
-
 long oldPosition  = -999;
 Encoder myEnc(2, 3);
 void encoderMove(uint8_t Encoder) 
