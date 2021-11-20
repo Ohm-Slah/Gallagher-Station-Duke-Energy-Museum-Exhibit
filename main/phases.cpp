@@ -15,8 +15,7 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-  pinMode(13, OUTPUT); //LED pin of Arduino Mega
-  Serial.begin(9600);
+
   delay(100);
   
   if (!serialResponse("RESPOND")) error();
