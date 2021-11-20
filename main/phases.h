@@ -11,8 +11,8 @@
 #define SETUP_H
 
 #include <Arduino.h>
-#include <Encoder.h>
-#include <TM1637.h>
+#include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
+#include <TM1637.h>   //https://github.com/AKJ7/TM1637
 
 
 void initialization();
@@ -27,7 +27,7 @@ void failure();
 void completion();
 void sleep();
 void error();
-void encoderRead(uint8_t Encoder);
+int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 

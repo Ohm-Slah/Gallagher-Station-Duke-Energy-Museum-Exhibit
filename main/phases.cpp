@@ -9,11 +9,16 @@
 
 #include "phases.h"
 
-long oldPosition  = -999; //Sets the Encoder from its original position
-Encoder myEnc(2, 3); //Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. If both pins have interrupt capability, both will be used for best performance. 
-                    //Encoder will also work in low performance polling mode if neither pin has interrupts. 
-
-TM1637 tm(2, 3); //library instantiation for 7-segment display
+Encoder AirandVoltage(2, 3);        
+Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+                             * If both pins have interrupt capability, both will be used for best performance. 
+                             * Encoder will also work in low performance polling mode if neither pin has interrupts. 
+                             */
+                           
+TM1637 tm(4, 5);            /* Library instantiation for 7-segment display
+                             * Pin 4 -> DIO
+                             * Pin 5 -> CLK
+                             */
 
 void initialization() 
 {
@@ -147,14 +152,25 @@ void error()
   }
 }
 
-void encoderRead(uint8_t Encoder) 
+int8_t encoderRead(char enc) 
 {
-  long newPosition = myEnc.read(); //returns the accumlated position (new position)
-  if (newPosition != oldPosition) 
+  /*
+   * This function takes in a character representing what encoder value you want returned. That value is then returned.
+   */
+  if (enc = 'A')                  //if Air Control
   {
-    oldPosition = newPosition; //If the new postion is not equal to old the new value is set
-   // Serial.println(newPosition); // i dont think this is needed
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else if (enc = 'C')           //if Coal Control
+  {
+    return Coal.read();           //returns the accumlated position (new position)
+  } else if (enc = 'V')           //if Voltage Control
+  {
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else
+  {
+    return;
   }
+  
   
 }
 
