@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
- * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/18/21
+ * Contributor(s):    Elliot Eickholtz, Jackson Couch, Andrew Boehm
+ * Last edit:         11/20/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
@@ -9,7 +9,16 @@
 
 #include "phases.h"
 
-TM1637 tm(2, 3); //library instantiation for 7-segment display
+Encoder AirandVoltage(2, 3);        
+Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+                             * If both pins have interrupt capability, both will be used for best performance. 
+                             * Encoder will also work in low performance polling mode if neither pin has interrupts. 
+                             */
+                           
+TM1637 tm(4, 5);            /* Library instantiation for 7-segment display
+                             * Pin 4 -> DIO
+                             * Pin 5 -> CLK
+                             */
 
 void initialization() 
 {
@@ -143,6 +152,28 @@ void error()
   }
 }
 
+int8_t encoderRead(char enc) 
+{
+  /*
+   * This function takes in a character representing what encoder value you want returned. That value is then returned.
+   */
+  if (enc = 'A')                  //if Air Control
+  {
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else if (enc = 'C')           //if Coal Control
+  {
+    return Coal.read();           //returns the accumlated position (new position)
+  } else if (enc = 'V')           //if Voltage Control
+  {
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else
+  {
+    return;
+  }
+  
+  
+}
+
 void initSevenSegment()
 {
   /*
@@ -160,4 +191,5 @@ void displayDigitalNumber(float value)
    */
   
   tm.display(value);
+
 }
