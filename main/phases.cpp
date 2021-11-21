@@ -8,6 +8,12 @@
  */
 
 #include "phases.h"
+// Create a new servo object:
+Servo myservo;
+// Define the servo pin:
+#define servoPin 9
+// Create a variable to store the servo position:
+int angle = 0;
 
 void initialization() 
 {
@@ -140,40 +146,33 @@ void error()
   }
 }
 void ServoSetup() //Run these once 
-    {
-      // Declare pins as Outputs
-      pinMode(12, OUTPUT); //sets pin 12 as the output for steps 
-      pinMode(13, OUTPUT); //sets pin 13 as the output for direction 
-    }
+{
+ // Attach the Servo variable to a pin:
+  myservo.attach(servoPin);
+}
 
 
 void ServoMove (uint8_t Servo)   //Function for the servo motor 
-    {
-      // Set motor direction clockwise
-      digitalWrite(13, HIGH); // 13 is the direction pin
-
-      // Spin motor slowly
-      for(int x = 0; x < 200; x++) //200 revolutions per minute 
-      {
-        digitalWrite(12, HIGH); // step pin is 12
-        delayMicroseconds(2000);
-        digitalWrite(12, LOW);
-        delayMicroseconds(2000);
-      }
-      delay(1000); // Wait a second
-
-      // Set motor direction counterclockwise
-      digitalWrite(13, LOW);
-
-      // Spin motor quickly
-      for(int x = 0; x < 200; x++)
-      {
-        digitalWrite(12, HIGH);
-        delayMicroseconds(1000);
-        digitalWrite(12, LOW);
-        delayMicroseconds(1000);
-      }
-      delay(1000); // Wait a second
-    }
+{
+  // Tell the servo to go to a particular angle:
+  myservo.write(0);
+  delay(1000);
+  myservo.write(270); // These values can be changed this is random right now 
+  delay(1000);
+  myservo.write(0);
+  delay(1000);
+  // Sweep from 0 to 180 degrees:
+  for (angle = 0; angle <= 180; angle += 1) {
+    myservo.write(angle);
+    delay(15);
+  }
+  // And back from 180 to 0 degrees:
+  for (angle = 180; angle >= 0; angle -= 1) 
+  {
+    myservo.write(angle);
+    delay(30);
+  }
+  delay(1000);
+}
 
 
