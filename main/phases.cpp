@@ -10,8 +10,6 @@
 #include "phases.h"
 // Create a new servo object:
 Servo myservo;
-// Define the servo pin:
-#define servoPin 9
 // Create a variable to store the servo position:
 int angle = 0;
 
