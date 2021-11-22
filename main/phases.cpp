@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.cpp"
- * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
  * Last edit:         11/22/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
@@ -8,6 +8,10 @@
  */
 
 #include "phases.h"
+// Create a new servo object:
+Servo myservo;
+// Create a variable to store the servo position:
+int angle = 0;
 
 Encoder AirandVoltage(2, 3);        
 Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
@@ -31,6 +35,9 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
+
+  ServoSetup();
+
   pinMode(22, OUTPUT); //Phase 1 Red LED
   pinMode(23, OUTPUT); //Phase 1 Green LED
   pinMode(24, OUTPUT); //Phase 2 Red LED
@@ -46,6 +53,7 @@ void initialization()
   TIMSK1 = (1 << OCIE1A);
   sei();
   Serial.begin(9600);
+
   delay(100);
   
   if (!serialResponse("RESPOND")) error();
@@ -170,6 +178,35 @@ void error()
   }
 }
 
+void ServoSetup() //Run these once 
+{
+  /*
+   * This function initializes a servo, run once on startup.
+   */
+  myservo.attach(servoPin);
+  
+  for (angle = 0; angle <= 180; angle += 1) {
+    myservo.write(angle);
+    delay(10);
+  }
+  // And back from 180 to 0 degrees:
+  for (angle = 180; angle >= 0; angle -= 1) 
+  {
+    myservo.write(angle);
+    Serial.println(angle);
+    delay(10);
+  }
+}
+
+
+void ServoMove(uint16_t position)
+{
+  /*
+   * This function recieves a position value and moves the servo to that position.
+   */
+  myservo.write(position);  
+
+
 int8_t encoderRead(char enc) 
 {
   /*
@@ -284,4 +321,5 @@ ISR(TIMER1_COMPA_vect)
     ledStateChange(0);
     
   ledCount++;
+
 }

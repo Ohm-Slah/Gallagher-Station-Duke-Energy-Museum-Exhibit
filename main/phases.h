@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.h"
- * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
  * Last edit:         11/22/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
@@ -10,12 +10,16 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+
+#define servoPin 9 // Define the servo pin:
+
 #define LED_ON_BOARD 13
 #define MOTOR_PIN 12
 
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
+#include <Servo.h>
 
 void initialization();
 bool phaseZero();
@@ -24,6 +28,7 @@ bool phaseTwo();
 bool phaseThree();
 bool phaseFour();
 
+
 bool serialResponse(char com[]);
 void ledBlink(byte LED, int Time);
 void ledStateChange(byte State);
@@ -31,10 +36,10 @@ void failure();
 void completion();
 void sleep();
 void error();
+
 int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
-
 
 #endif
