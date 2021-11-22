@@ -9,6 +9,16 @@
 
 #include "phases.h"
 
+Encoder AirandVoltage(2, 3);        
+Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+                             * If both pins have interrupt capability, both will be used for best performance. 
+                             * Encoder will also work in low performance polling mode if neither pin has interrupts. 
+                             */
+
+TM1637 tm(4, 5);            /* Library instantiation for 7-segment display
+                             * Pin 4 -> DIO
+                             * Pin 5 -> CLK
+                             */
 
 const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
@@ -29,7 +39,9 @@ void initialization()
   pinMode(27, OUTPUT); //Phase 3 Green LED
   pinMode(28, OUTPUT); //Phase 4 Red LED
   pinMode(29, OUTPUT); //Phase 4 Green LED
-  pinMode(13, OUTPUT); //LED pin of Arduino Mega
+  pinMode(LED_ON_BOARD, OUTPUT); //LED pin of Arduino Mega
+  pinMode(MOTOR_PIN, OUTPUT); //DC Motor Pin
+  
   TCCR1A = 0;
   TIMSK1 = (1 << OCIE1A);
   sei();
@@ -156,6 +168,56 @@ void error()
     digitalWrite(13, LOW);
     delay(200);
   }
+}
+
+int8_t encoderRead(char enc) 
+{
+  /*
+   * This function takes in a character representing what encoder value you want returned. That value is then returned.
+   */
+  if (enc = 'A')                  //if Air Control
+  {
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else if (enc = 'C')           //if Coal Control
+  {
+    return Coal.read();           //returns the accumlated position (new position)
+  } else if (enc = 'V')           //if Voltage Control
+  {
+    return AirandVoltage.read();  //returns the accumlated position (new position)
+  } else
+  {
+    return;
+  }
+
+
+}
+
+void initSevenSegment()
+{
+  /*
+   * This function runs once at startup and initializes the 7-segment display.
+   */
+  tm.begin();
+  tm.setBrightness(4);
+}
+
+void displayDigitalNumber(float value)
+{
+  /*
+   * This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
+   * Due to it's simplicity, it may be removed at a later date.
+   */
+
+  tm.display(value);
+
+}
+
+void setDCMotor(uint16_t pwmValue)
+{
+  /*
+   * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
+   */
+  analogWrite(MOTOR_PIN, pwmValue);
 }
 
 void ledStateChange(byte State)
