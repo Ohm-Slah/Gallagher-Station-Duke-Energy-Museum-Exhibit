@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
- * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/17/21
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Last edit:         11/22/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -22,11 +22,13 @@ bool phaseThree();
 bool phaseFour();
 
 bool serialResponse(char com[]);
-void ServoMove (unint_8 Servo);
-void ServoSetup(); 
+void ledBlink(byte LED, int Time);
+void ledStateChange(byte State);
 void failure();
 void completion();
 void sleep();
 void error();
+
+
 
 #endif

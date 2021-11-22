@@ -1,16 +1,19 @@
 /*
  * File name:         "phases.cpp"
- * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/18/21
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Last edit:         11/22/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
  */
 
 #include "phases.h"
+
+
 const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
-byte ledBlink;
+byte ledState = 0;
+long ledCount = 0;
 
 void initialization() 
 {
@@ -168,6 +171,7 @@ void ledStateChange(byte State)
    digitalWrite(27, (State&00100000));
    digitalWrite(28, (State&01000000));
    digitalWrite(29, (State&10000000));
+   Serial.println(State);
 }
 
 void ledBlink(byte LED, int Time)
@@ -176,7 +180,7 @@ void ledBlink(byte LED, int Time)
    * This function takes in a byte to select which pin to blink, and a int for how long to blink in ms.
    * The delay can be 500ms, 1000ms, 2000ms, or 4000ms.
    */
-   ledBlink = LED;
+   ledState = LED;
    switch(Time)
    {
     case 500:
@@ -212,5 +216,10 @@ void ledBlink(byte LED, int Time)
 
 ISR(TIMER1_COMPA_vect)
 {
-  digitalWrite(ledBlink, ~ledBlink);
+  if (ledCount%2)
+    ledStateChange(ledState);
+  else
+    ledStateChange(0);
+    
+  ledCount++;
 }
