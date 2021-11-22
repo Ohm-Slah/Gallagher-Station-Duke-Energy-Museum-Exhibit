@@ -19,8 +19,9 @@ bool fourPassed = false;
 
 void setup() 
 {
-  initialization();
   
+  initialization();
+  initSevenSegment();
 }
 
 void loop() 
