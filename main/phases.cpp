@@ -1,3 +1,12 @@
+/*
+ * File name:         "phases.cpp"
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Last edit:         11/22/21
+ * Code usage:
+ * This is a file containing all functions used in each of the five phases of the "main.ino" file.
+ * 
+ */
+
 #include "phases.h"
 
 Encoder AirandVoltage(2, 3);        
@@ -5,11 +14,16 @@ Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates 
                              * If both pins have interrupt capability, both will be used for best performance. 
                              * Encoder will also work in low performance polling mode if neither pin has interrupts. 
                              */
-                           
+
 TM1637 tm(4, 5);            /* Library instantiation for 7-segment display
                              * Pin 4 -> DIO
                              * Pin 5 -> CLK
                              */
+
+const uint16_t halfTwoSec = 31250;
+const uint16_t fullFourSec = 62500;
+byte ledState = 0;
+long ledCount = 0;
 
 void initialization() 
 {
@@ -17,8 +31,20 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
+  pinMode(22, OUTPUT); //Phase 1 Red LED
+  pinMode(23, OUTPUT); //Phase 1 Green LED
+  pinMode(24, OUTPUT); //Phase 2 Red LED
+  pinMode(25, OUTPUT); //Phase 2 Green LED
+  pinMode(26, OUTPUT); //Phase 3 Red LED
+  pinMode(27, OUTPUT); //Phase 3 Green LED
+  pinMode(28, OUTPUT); //Phase 4 Red LED
+  pinMode(29, OUTPUT); //Phase 4 Green LED
   pinMode(LED_ON_BOARD, OUTPUT); //LED pin of Arduino Mega
   pinMode(MOTOR_PIN, OUTPUT); //DC Motor Pin
+  
+  TCCR1A = 0;
+  TIMSK1 = (1 << OCIE1A);
+  sei();
   Serial.begin(9600);
   delay(100);
   
@@ -162,8 +188,8 @@ int8_t encoderRead(char enc)
   {
     return;
   }
-  
-  
+
+
 }
 
 void initSevenSegment()
@@ -181,7 +207,7 @@ void displayDigitalNumber(float value)
    * This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
    * Due to it's simplicity, it may be removed at a later date.
    */
-  
+
   tm.display(value);
 
 }
@@ -194,3 +220,68 @@ void setDCMotor(uint16_t pwmValue)
   analogWrite(MOTOR_PIN, pwmValue);
 }
 
+void ledStateChange(byte State)
+{
+  /*
+   * This function takes in a byte (pins 22-29) representing the wanted state of the LEDs.
+   */
+   digitalWrite(22, (State&00000001));
+   digitalWrite(23, (State&00000010));
+   digitalWrite(24, (State&00000100));
+   digitalWrite(25, (State&00001000));
+   digitalWrite(26, (State&00010000));
+   digitalWrite(27, (State&00100000));
+   digitalWrite(28, (State&01000000));
+   digitalWrite(29, (State&10000000));
+   Serial.println(State);
+}
+
+void ledBlink(byte LED, int Time)
+{
+  /*
+   * This function takes in a byte to select which pin to blink, and a int for how long to blink in ms.
+   * The delay can be 500ms, 1000ms, 2000ms, or 4000ms.
+   */
+   ledState = LED;
+   switch(Time)
+   {
+    case 500:
+      TCCR1B |= (1 << CS12);
+      TCCR1B &= ~(1 << CS11);
+      TCCR1B &= ~(1 << CS10);
+      TCNT1 = 0;
+      OCR1A = halfTwoSec;
+      break;
+    case 1000:
+      TCCR1B |= (1 << CS12);
+      TCCR1B &= ~(1 << CS11);
+      TCCR1B &= ~(1 << CS10);
+      TCNT1 = 0;
+      OCR1A = fullFourSec;
+      break;
+    case 2000:
+      TCCR1B |= (1 << CS12);
+      TCCR1B &= ~(1 << CS11);
+      TCCR1B |= (1 << CS10);
+      TCNT1 = 0;
+      OCR1A = halfTwoSec;
+      break;
+    case 4000:
+      TCCR1B |= (1 << CS12);
+      TCCR1B &= ~(1 << CS11);
+      TCCR1B |= (1 << CS10);
+      TCNT1 = 0;
+      OCR1A = fullFourSec;
+      break;
+   }
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  if (ledCount%2)
+    ledStateChange(ledState);
+  else
+    ledStateChange(0);
+    
+  ledCount++;
+}
