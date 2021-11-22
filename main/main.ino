@@ -21,7 +21,7 @@ void setup()
 {
   
   initialization();
-  
+  initSevenSegment();
 }
 
 void loop() 
