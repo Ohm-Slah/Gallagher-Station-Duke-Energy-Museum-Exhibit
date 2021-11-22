@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.h"
- * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
  * Last edit:         11/22/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
