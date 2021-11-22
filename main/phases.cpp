@@ -19,6 +19,8 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
+   Serial.begin(9600);
+   ServoSetup();
 
   delay(100);
   
@@ -145,32 +147,29 @@ void error()
 }
 void ServoSetup() //Run these once 
 {
- // Attach the Servo variable to a pin:
+  /*
+   * This function initializes a servo, run once on startup.
+   */
   myservo.attach(servoPin);
-}
-
-
-void ServoMove (uint8_t Servo)   //Function for the servo motor 
-{
-  // Tell the servo to go to a particular angle:
-  myservo.write(0);
-  delay(1000);
-  myservo.write(270); // These values can be changed this is random right now 
-  delay(1000);
-  myservo.write(0);
-  delay(1000);
-  // Sweep from 0 to 180 degrees:
+  
   for (angle = 0; angle <= 180; angle += 1) {
     myservo.write(angle);
-    delay(15);
+    delay(10);
   }
   // And back from 180 to 0 degrees:
   for (angle = 180; angle >= 0; angle -= 1) 
   {
     myservo.write(angle);
-    delay(30);
+    Serial.println(angle);
+    delay(10);
   }
-  delay(1000);
 }
 
 
+void ServoMove(uint16_t position)
+{
+  /*
+   * This function recieves a position value and moves the servo to that position.
+   */
+  myservo.write(position);  
+}
