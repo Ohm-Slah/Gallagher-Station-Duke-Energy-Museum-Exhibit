@@ -10,11 +10,12 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+//PINS 11 & 12 CANNOT BE USED FOR PWM
 
 #define servoPin 9 // Define the servo pin:
 
 #define LED_ON_BOARD 13
-#define MOTOR_PIN 12
+#define MOTOR_PIN 10
 
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
