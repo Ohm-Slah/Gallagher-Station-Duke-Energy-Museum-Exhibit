@@ -323,3 +323,20 @@ ISR(TIMER1_COMPA_vect)
   ledCount++;
 
 }
+  
+void fail_state_audio()
+{
+  TMRpcm tmrpcm;
+
+  tmrpcm.speakerPin = 5;  //speaker output pin - can be 5,6,11, or 46
+  Serial.begin(9600);
+  if (!SD.begin(SD_ChipSelectPin)) 
+  {
+  Serial.println("SD fail");
+  return;
+  }
+
+  tmrpcm.setVolume(5); //sets volume (0-7)
+  tmrpcm.play("fitnessgram.wav"); //***insert file name here***
+
+}
