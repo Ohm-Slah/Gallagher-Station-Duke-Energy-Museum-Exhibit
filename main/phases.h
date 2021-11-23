@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.h"
- * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
  * Last edit:         11/22/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
@@ -16,11 +16,15 @@
 
 #define LED_ON_BOARD 13
 #define MOTOR_PIN 10
+#define SD_ChipSelectPin 4
 
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
 #include <Servo.h>
+#include <SD.h>
+#include <TMRpcm.h>   //https://www.arduino.cc/reference/en/libraries/tmrpcm/
+#include <SPI.h>
 
 void initialization();
 bool phaseZero();
@@ -42,5 +46,6 @@ int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
+void fail_state_audio();
 
 #endif
