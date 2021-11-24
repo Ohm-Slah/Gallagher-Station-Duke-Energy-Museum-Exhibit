@@ -1,7 +1,7 @@
 /*
  * File name:         "main.ino"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         11/17/21
+ * Last edit:         11/24/21
  * Code usage:
  * This is the main Arduino file used in the creation of a museum exhibit of the Gallagher Station is New Albany, Indiana. 
  * The intended usage of this code is to simulate the responsibilities of a control station operator of a coal-fired power plant, 
@@ -10,8 +10,6 @@
  */
 
 #include "phases.h"
-
-
 
 void setup() 
 {
@@ -22,37 +20,41 @@ void setup()
 
 void loop() 
 {
-  zeroPassed = phaseZero();
+  Serial.print(currentPhase);
+  Serial.print(" : ");
+  Serial.println(phaseChange);
   
-  if (phaseZero())
+  switch(currentPhase)
   {
-    onePassed = phaseOne();
-    if (phaseOne())
-    {
-      twoPassed = phaseOne();
-      if (phaseTwo())
-      {
-        threePassed = phaseThree();
-        if (phaseThree())
-        {
-          fourPassed = phaseFour();
-          if (phaseFour())
-          {
-            completion();
-          } else {
-            failure();
-          }
-        } else {
-          failure();
-        }
-      } else {
-        failure();
-      }
-    } else {
-      failure();
-    }
-  } else {
-    failure();
+    case 0:
+      phaseChange = false;
+      currentPhase = phaseZero();
+    break;
+    case 1:
+      phaseChange = false;
+      currentPhase = phaseOne();
+    break;
+    case 2:
+      phaseChange = false;
+      currentPhase = phaseTwo();
+    break;
+    case 3:
+      phaseChange = false;
+      currentPhase = phaseThree();
+    break;
+    case 4:
+      phaseChange = false;
+      currentPhase = phaseFour();
+    break;
+    case 10:
+      phaseChange = false;
+      completion();
+      resetPhases();
+    break;
+    default:
+      error();
+    break;
+    
   }
   
 }

@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
- * Last edit:         11/22/21
+ * Last edit:         11/24/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
@@ -11,6 +11,8 @@
 
 // Create a variable to store the servo position:
 int angle = 0;
+volatile bool phaseChange = false;
+volatile byte currentPhase = 0;
 
 Encoder AirandVoltage(2, 3);        
 Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
@@ -42,7 +44,9 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-  
+
+  pinMode(30, INPUT); //Confirm button
+  pinMode(31, INPUT); //Send Power button
   pinMode(22, OUTPUT); //Phase 1 Red LED
   pinMode(23, OUTPUT); //Phase 1 Green LED
   pinMode(24, OUTPUT); //Phase 2 Red LED
@@ -67,7 +71,7 @@ void initialization()
   if (!serialResponse("RESPOND")) error();
 }
 
-bool phaseZero() 
+byte phaseZero() 
 {
   /*
    * This fuction is the 'awaiting user input' phase. This will run for a maximum of three hours,
@@ -76,48 +80,57 @@ bool phaseZero()
    */
   if (!serialResponse("PHASE ZERO")) error();
   delay(1000);
-  return true;
+  return 1;
 
 }
 
-bool phaseOne() 
+byte phaseOne() 
 {
   /*
    * This function is the first phase of the display.
    */
   if (!serialResponse("PHASE ONE")) error();
+  if(phaseChange) return 1;
   delay(1000);
-  return true;
+  if(phaseChange) return 1;
+  return 2;
 }
 
-bool phaseTwo() 
+byte phaseTwo() 
 {
   /*
    * This function is the second phase of the display.
    */
   if (!serialResponse("PHASE TWO")) error();
+
+  if(phaseChange) return 1;
   delay(1000);
-  return true;
+  if(phaseChange) return 1;
+  return 3;
 }
 
-bool phaseThree() 
+byte phaseThree() 
 {
   /*
    * This function is the third phase of the display.
    */
   if (!serialResponse("PHASE THREE")) error();
+  if(phaseChange) return 1;
   delay(1000);
-  return true;
+  if(phaseChange) return 1;
+  return 4;
 }
 
-bool phaseFour() 
+byte phaseFour() 
 {
   /*
    * This function is the fourth phase of the display.
    */
   if (!serialResponse("PHASE FOUR")) error();
+  if(phaseChange) return 1;
   delay(1000);
-  return true;
+  if(phaseChange) return 1;
+  return 10;
 }
 
 bool serialResponse(char com[])
@@ -126,28 +139,29 @@ bool serialResponse(char com[])
    * This function takes a predefined string command and confirms a serial response from the raspberry pi running processing.
    * Predefined commands: "RESPOND" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE"
    */
-  uint8_t attempts = 0;
- 
-  delay(100);
-  while(attempts <= 5)
-  {
-    Serial.println(com);
-    if (Serial.available())
-    {
-      char val = Serial.read();
-      Serial.println(val);
-      if (val == '1')
-      {
-        return true;
-      } else {
-        return false;
-        attempts++;
-      }
-    }
-    delay(100);
-    attempts++;
-  }
-  return false;
+//  uint8_t attempts = 0;
+// 
+//  delay(100);
+//  while(attempts <= 5)
+//  {
+//    Serial.println(com);
+//    if (Serial.available())
+//    {
+//      char val = Serial.read();
+//      Serial.println(val);
+//      if (val == '1')
+//      {
+//        return true;
+//      } else {
+//        return false;
+//        attempts++;
+//      }
+//    }
+//    delay(100);
+//    attempts++;
+//  }
+//  return false;
+  return true;
   
 }
 
@@ -184,6 +198,24 @@ void error()
     digitalWrite(13, LOW);
     delay(200);
   }
+}
+
+void resetPhases()
+{
+  /*
+   * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
+   */
+   phaseChange = true;
+   currentPhase = 1;
+   test();
+}
+
+void test()
+{
+  Serial.print("INTERRUPT : ");
+  Serial.print(currentPhase);
+  Serial.print(" : ");
+  Serial.println(phaseChange);
 }
 
 void servoMove(uint16_t position)
@@ -244,13 +276,7 @@ void setDCMotor(uint16_t pwmValue)
   analogWrite(MOTOR_PIN, pwmValue);
 }
 
-void resetPhases()
-{
-  /*
-   * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
-   */
-   
-}
+
 
 void ledStateChange(byte State)
 {
@@ -265,7 +291,7 @@ void ledStateChange(byte State)
    digitalWrite(27, (State&00100000));
    digitalWrite(28, (State&01000000));
    digitalWrite(29, (State&10000000));
-   Serial.println(State);
+   //Serial.println(State);
 }
 
 void ledBlink(byte LED, int Time)

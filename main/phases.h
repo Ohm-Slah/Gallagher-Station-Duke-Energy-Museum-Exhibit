@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
- * Last edit:         11/22/21
+ * Last edit:         11/24/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -22,19 +22,15 @@
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
 
-extern bool zeroPassed;
-extern bool onePassed;
-extern bool twoPassed;
-extern bool threePassed;
-extern bool fourPassed;
+extern volatile byte currentPhase;
+extern volatile bool phaseChange;
 
 void initialization();
-bool phaseZero();
-bool phaseOne();
-bool phaseTwo();
-bool phaseThree();
-bool phaseFour();
-
+byte phaseZero();
+byte phaseOne();
+byte phaseTwo();
+byte phaseThree();
+byte phaseFour();
 
 bool serialResponse(char com[]);
 void ledBlink(byte LED, int Time);
@@ -51,4 +47,5 @@ void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
 
+void test();
 #endif
