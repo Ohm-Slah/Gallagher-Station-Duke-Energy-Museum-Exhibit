@@ -59,7 +59,7 @@ void find_home();
 void setup() 
 {
   
-   Rotate at a set rate until homing switch is activated and sets global varaible to zero (home position)
+   //Rotate at a set rate until homing switch is activated and sets global varaible to zero (home position)
       while (home_switch == LOW) //When the switch is not on 
       {
        find_home();  //calls the function home
@@ -84,7 +84,7 @@ void find_home ()
 
 void Move_home1()
   {
-   for(int x = 0; x < stepsPerRevolution; x++)
+   for(int x = 0; x < totalMotorSteps; x++)
    {
       while(home_switch = 0 && position ==0)
       {
