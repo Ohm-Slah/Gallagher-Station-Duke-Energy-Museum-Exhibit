@@ -11,11 +11,7 @@
 
 #include "phases.h"
 
-bool zeroPassed = false;
-bool onePassed = false;
-bool twoPassed = false;
-bool threePassed = false;
-bool fourPassed = false;
+
 
 void setup() 
 {

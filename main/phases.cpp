@@ -8,8 +8,7 @@
  */
 
 #include "phases.h"
-// Create a new servo object:
-Servo myservo;
+
 // Create a variable to store the servo position:
 int angle = 0;
 
@@ -29,15 +28,21 @@ const uint16_t fullFourSec = 62500;
 byte ledState = 0;
 long ledCount = 0;
 
+bool zeroPassed = false;
+bool onePassed = false;
+bool twoPassed = false;
+bool threePassed = false;
+bool fourPassed = false;
+
+
+
 void initialization() 
 {
   /*
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-
-  ServoSetup();
-
+  
   pinMode(22, OUTPUT); //Phase 1 Red LED
   pinMode(23, OUTPUT); //Phase 1 Green LED
   pinMode(24, OUTPUT); //Phase 2 Red LED
@@ -48,6 +53,9 @@ void initialization()
   pinMode(29, OUTPUT); //Phase 4 Green LED
   pinMode(LED_ON_BOARD, OUTPUT); //LED pin of Arduino Mega
   pinMode(MOTOR_PIN, OUTPUT); //DC Motor Pin
+  pinMode(servoPin, OUTPUT); //Servo motor Pin
+  pinMode(20, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(20), resetPhases, FALLING);
   
   TCCR1A = 0;
   TIMSK1 = (1 << OCIE1A);
@@ -178,34 +186,13 @@ void error()
   }
 }
 
-void ServoSetup() //Run these once 
+void servoMove(uint16_t position)
 {
   /*
-   * This function initializes a servo, run once on startup.
+   * This function recieves a position value and moves the servo to that position. 0-1023
    */
-  myservo.attach(servoPin);
-  
-  for (angle = 0; angle <= 180; angle += 1) {
-    myservo.write(angle);
-    delay(10);
-  }
-  // And back from 180 to 0 degrees:
-  for (angle = 180; angle >= 0; angle -= 1) 
-  {
-    myservo.write(angle);
-    Serial.println(angle);
-    delay(10);
-  }
+  analogWrite(servoPin, position);
 }
-
-
-void ServoMove(uint16_t position)
-{
-  /*
-   * This function recieves a position value and moves the servo to that position.
-   */
-  myservo.write(position);  
-
 
 int8_t encoderRead(char enc) 
 {
@@ -255,6 +242,14 @@ void setDCMotor(uint16_t pwmValue)
    * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
    */
   analogWrite(MOTOR_PIN, pwmValue);
+}
+
+void resetPhases()
+{
+  /*
+   * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
+   */
+   
 }
 
 void ledStateChange(byte State)

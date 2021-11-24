@@ -7,12 +7,13 @@
  * Any libraries used or function declarations are located here.
  */
 
+#pragma once
 #ifndef SETUP_H
 #define SETUP_H
 
 //PINS 11 & 12 CANNOT BE USED FOR PWM
 
-#define servoPin 9 // Define the servo pin:
+#define servoPin 8 // Define the servo pin:
 
 #define LED_ON_BOARD 13
 #define MOTOR_PIN 10
@@ -20,7 +21,12 @@
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
-#include <Servo.h>
+
+extern bool zeroPassed;
+extern bool onePassed;
+extern bool twoPassed;
+extern bool threePassed;
+extern bool fourPassed;
 
 void initialization();
 bool phaseZero();
@@ -38,6 +44,8 @@ void completion();
 void sleep();
 void error();
 
+void servoMove(uint16_t position);
+void resetPhases();
 int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
