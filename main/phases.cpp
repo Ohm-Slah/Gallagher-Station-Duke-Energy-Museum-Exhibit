@@ -30,13 +30,13 @@ const uint16_t fullFourSec = 62500;
 byte ledState = 0;
 long ledCount = 0;
 
+TMRpcm tmrpcm; //This is for the audio 
+
 bool zeroPassed = false;
 bool onePassed = false;
 bool twoPassed = false;
 bool threePassed = false;
 bool fourPassed = false;
-
-
 
 void initialization() 
 {
@@ -69,6 +69,17 @@ void initialization()
   delay(100);
   
   if (!serialResponse("RESPOND")) error();
+                                  //Audio 
+  tmrpcm.speakerPin=9;            //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
+                                //Complimentary Output or Dual Speakers:
+                                //pinMode(10,OUTPUT); Pin pairs: 9,10 Mega: 5-2,6-7,11-12,46-45 
+  Serial.begin(9600);
+  if(!SD.begin(SD_ChipSelectPin))
+  {
+    Serial.println("SD fail");
+    return;
+  }
+  
 }
 
 byte phaseZero() 
@@ -342,5 +353,14 @@ ISR(TIMER1_COMPA_vect)
     ledStateChange(0);
     
   ledCount++;
+
+}
+  
+void fail_state_audio()
+{
+                       // run repeatedly:
+tmrpcm.setVolume(6);
+tmrpcm.play("JA.wav");
+delay(5000); 
 
 }

@@ -1,6 +1,6 @@
 /*
  * File name:         "phases.h"
- * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
  * Last edit:         11/24/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
@@ -17,10 +17,15 @@
 
 #define LED_ON_BOARD 13
 #define MOTOR_PIN 10
+#define SD_ChipSelectPin 53   // example uses hardware SS pin 53 on Mega2560 or 10 for the UNO 
 
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
+#include <Servo.h>
+#include <SD.h>
+#include <TMRpcm.h>   //https://www.arduino.cc/reference/en/libraries/tmrpcm/
+#include <SPI.h>
 
 extern volatile byte currentPhase;
 extern volatile bool phaseChange;
@@ -46,6 +51,7 @@ int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
+void fail_state_audio();
 
 void test();
 #endif
