@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         11/24/21
+ * Last edit:         11/29/21
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -22,7 +22,6 @@
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
-#include <Servo.h>
 #include <SD.h>
 #include <TMRpcm.h>   //https://www.arduino.cc/reference/en/libraries/tmrpcm/
 #include <SPI.h>
@@ -45,7 +44,9 @@ void completion();
 void sleep();
 void error();
 
-void servoMove(uint16_t position);
+void stepperTick();
+void homeStepper();
+void StepperSetup();
 void resetPhases();
 int8_t encoderRead(char enc);
 void initSevenSegment();

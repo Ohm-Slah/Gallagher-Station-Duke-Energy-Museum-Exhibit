@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch
- * Last edit:         11/24/21
+ * Last edit:         11/29/21
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.ino" file.
  * 
@@ -29,6 +29,15 @@ const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
 byte ledState = 0;
 long ledCount = 0;
+
+//integers for the stepper motor 
+const int dirPin = 30;
+const int stepPin = 31;
+const int enPin = 32;
+const int homePin = 33;
+const int stepsPerRevolution = 200;
+
+long stepperPosition;
 
 TMRpcm tmrpcm; //This is for the audio 
 
@@ -345,6 +354,41 @@ void ledBlink(byte LED, int Time)
    }
 }
 
+void StepperSetup()
+{
+  // Declare pins as Outputs
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+  pinMode(enPin, OUTPUT);
+  pinMode(homePin, INPUT);
+
+  // Set motor direction clockwise
+  digitalWrite(dirPin, HIGH);
+  // disable stepper
+  digitalWrite(enPin, HIGH);
+}
+
+void homeStepper()
+{
+  digitalWrite(enPin, LOW);
+  
+  while(!digitalRead(homePin))
+  {
+    stepperTick();
+    delay(20);
+  }
+  stepperPosition = 0;
+}
+
+void stepperTick()
+{
+  digitalWrite(stepPin, HIGH);
+  delayMicroseconds(1);
+  digitalWrite(stepPin, LOW);
+  stepperPosition = (stepperPosition%stepsPerRevolution) + 1;
+}
+
+
 ISR(TIMER1_COMPA_vect)
 {
   if (ledCount%2)
@@ -358,9 +402,7 @@ ISR(TIMER1_COMPA_vect)
   
 void fail_state_audio()
 {
-                       // run repeatedly:
-tmrpcm.setVolume(6);
-tmrpcm.play("JA.wav");
-delay(5000); 
-
+  tmrpcm.setVolume(6);
+  tmrpcm.play("JA.wav");
+  delay(5000); 
 }
