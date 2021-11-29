@@ -16,7 +16,7 @@
 
 #define LED_ON_BOARD 13
 #define MOTOR_PIN 10
-#define SD_ChipSelectPin 4
+#define SD_ChipSelectPin 53   // example uses hardware SS pin 53 on Mega2560 or 10 for the UNO 
 
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
