@@ -20,9 +20,7 @@ void setup()
 
 void loop() 
 {
-  Serial.print(currentPhase);
-  Serial.print(" : ");
-  Serial.println(phaseChange);
+  if(phaseChange) if(!serialResponse("INTRO")) error();
   
   switch(currentPhase)
   {

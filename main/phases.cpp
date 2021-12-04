@@ -15,7 +15,7 @@ volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 
 Encoder AirandVoltage(2, 3);        
-Encoder Coal(18  , 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+Encoder CoalandSteam(18  , 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
                              * If both pins have interrupt capability, both will be used for best performance. 
                              * Encoder will also work in low performance polling mode if neither pin has interrupts. 
                              */
@@ -53,7 +53,7 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-  pinMode(15, OUTPUT);
+  pinMode(15, OUTPUT); //Light bulb
   pinMode(30, INPUT); //Confirm button
   pinMode(31, INPUT); //Send Power button
   pinMode(22, OUTPUT); //Phase 1 Red LED
@@ -121,55 +121,41 @@ byte phaseOne()
    * if result on servo gauge is within eror margins, continue onto next phase.
    * if result is outside error margins, play fail video? three tries?
    */
-   //digitalWrite(enPin, LOW);
    int prevPos = 0;
    //tmrpcm.loop(1);
    //fail_state_audio();
-//   ledBlink(255, 1000);
-//   long i = 0;
-//   while(1)
-//   {
-//    servoMove((int)map(i%255, 0, 255, 255, 0));
-//    Serial.println((int)map(i%255, 0, 255, 255, 0));
-//    if(i%255==0)
-//    {
-//      servoMove(0);
-//      delay(1000);
-//    }
-//    i++;
-//    delay(50);
-//    digitalWrite(19, !digitalRead(21));
-//    setDCMotor(!digitalRead(21)*100);
-//    displayDigitalNumber(encoderRead('A'));
-//    prevPos = encoderRead('C');
-//   }
 
   //Make sure everything is at an off state while the intro plays 
-  //if (!serialResponse("INTRO")) error();
-
-  //homeStepper();
-  servoMove(0);
+  homeStepper();
+  
   AirandVoltage.write(0);
-  Coal.write(0);
+  CoalandSteam.write(0);
   ledBlink(0, 1000);
-  digitalWrite(19, LOW);
+  digitalWrite(15, LOW);
+  servoMove(1);
 
   //initialize temporary variables
-  int8_t coalRead;
-  int8_t airRead;
-  int16_t coalAngle;
-  int16_t airAngle;
-  float airLine;
-  uint16_t coalLine;
+  int8_t coalRead = 0;
+  int8_t airRead = 0;
+  int16_t coalAngle = 0;
+  int16_t airAngle = 0;
+  float airLine = 0;
+  uint16_t coalLine = 0;
   uint16_t bottomLine = 1000;
-  float tempLine; 
+  float tempLine = 0; 
   //optimum temp of boiler: 2150 degF
 
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
+
+  /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
+  if (!serialResponse("PHASE ONE")){ error();}
+  
+  ledBlink(0xFF, 1000);
   
   while(digitalRead(21))
   {
+    if(phaseChange) return 1;
     coalRead = encoderRead('C');
     airRead = encoderRead('A');
 
@@ -185,7 +171,7 @@ byte phaseOne()
     if(coalRead)
     {
       coalAngle += coalRead;
-      Coal.write(0);
+      CoalandSteam.write(0);
       if(coalAngle > 70)
       {
         coalAngle = 70;
@@ -207,17 +193,22 @@ byte phaseOne()
     
     airLine = ((float)bottomLine*sin((float)coalAngle*PI/180))/sin(((float)180-coalAngle-airAngle)*PI/180);
     tempLine = sin((float)airAngle*PI/180)*airLine;
-    //Serial.println(tempLine, 4);
+    //Serial.print(map((int)tempLine, 0, 1374, 255, 0));Serial.print(" : ");Serial.print(airAngle);Serial.print(" : ");Serial.println(coalAngle);
     servoMove(map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
   }
+
+  if(abs(tempLine-926)<50 && abs(airAngle - coalAngle)<5)
+  {
+    Serial.println("SUCCESS");
+    
+    servoMove(79);
+    return 2;
+  } else {
+    failure();
+    return 1;
+  }
   
-  /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
-  if(phaseChange) return 1;
-  if (!serialResponse("PHASE ONE")) error();
-  if(phaseChange) return 1;
-  
-  return 2;
 }
 
 byte phaseTwo() 
@@ -226,6 +217,32 @@ byte phaseTwo()
    * This function is the second phase of the display.
    */
   if (!serialResponse("PHASE TWO")) error();
+  CoalandSteam.write(0);
+
+  int8_t steamRead = 0;
+  int steam = 0;
+
+  while(digitalRead(21))
+  {
+    if(phaseChange) return 1;
+    
+    if(steamRead)
+    {
+      steam += steamRead;
+      CoalandSteam.write(0);
+      if(steam > 70)
+      {
+        steam = 70;
+      }
+      else if(steam < 0)
+      {
+        steam = 0;
+      }
+    }
+
+    steamRead = encoderRead('C');
+  }
+  
 
   if(phaseChange) return 1;
   delay(1000);
@@ -268,7 +285,7 @@ bool serialResponse(char com[])
 //  delay(100);
 //  while(attempts <= 5)
 //  {
-//    Serial.println(com);
+    Serial.println(com);
 //    if (Serial.available())
 //    {
 //      char val = Serial.read();
@@ -294,6 +311,8 @@ void failure()
   /*
    * This function is the failure state of the display.
    */
+   delay(2000);
+   fail_state_audio();
   if (!serialResponse("FAILURE")) error();
   delay(1000);
   return true;
@@ -331,21 +350,12 @@ void resetPhases()
    */
    phaseChange = true;
    currentPhase = 1;
-   test();
-}
-
-void test()
-{
-  Serial.print("INTERRUPT : ");
-  Serial.print(currentPhase);
-  Serial.print(" : ");
-  Serial.println(phaseChange);
 }
 
 void servoMove(uint16_t position)
 {
   /*
-   * This function recieves a position value and moves the servo to that position. 0-1023
+   * This function recieves a position value and moves the servo to that position. 0-255
    */
   analogWrite(servoPin, position);
 }
@@ -360,7 +370,7 @@ int8_t encoderRead(char enc)
     return AirandVoltage.read();  //returns the accumlated position (new position)
   } else if (enc == 'C')           //if Coal Control
   {
-    return Coal.read();           //returns the accumlated position (new position)
+    return CoalandSteam.read();           //returns the accumlated position (new position)
   } else if (enc == 'V')           //if Voltage Control
   {
     return AirandVoltage.read();  //returns the accumlated position (new position)
@@ -473,8 +483,9 @@ void homeStepper()
   
   while(!digitalRead(homePin))
   {
+    Serial.println("HOMING");
     stepperTick();
-    delay(20);
+    delay(10);
   }
   stepperPosition = 0;
 }
