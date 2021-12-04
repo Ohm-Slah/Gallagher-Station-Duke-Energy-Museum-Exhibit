@@ -54,6 +54,7 @@ void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
 void fail_state_audio();
+int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 
 void test();
 #endif

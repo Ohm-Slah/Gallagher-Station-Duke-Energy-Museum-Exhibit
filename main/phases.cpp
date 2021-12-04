@@ -15,7 +15,7 @@ volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 
 Encoder AirandVoltage(2, 3);        
-Encoder Coal(14  , 15);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+Encoder Coal(18  , 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
                              * If both pins have interrupt capability, both will be used for best performance. 
                              * Encoder will also work in low performance polling mode if neither pin has interrupts. 
                              */
@@ -53,7 +53,7 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-  pinMode(19, OUTPUT);
+  pinMode(15, OUTPUT);
   pinMode(30, INPUT); //Confirm button
   pinMode(31, INPUT); //Send Power button
   pinMode(22, OUTPUT); //Phase 1 Red LED
@@ -155,45 +155,61 @@ byte phaseOne()
   digitalWrite(19, LOW);
 
   //initialize temporary variables
+  int8_t coalRead;
+  int8_t airRead;
   int16_t coalAngle;
   int16_t airAngle;
-  uint16_t airLine;
+  float airLine;
   uint16_t coalLine;
-  uint16_t bottomLine = 5;
-  uint16_t tempLine; 
+  uint16_t bottomLine = 1000;
+  float tempLine; 
   //optimum temp of boiler: 2150 degF
+
+  bool dir = false;  //0=left & 1=right
+  uint8_t count = 0;
   
   while(digitalRead(21))
   {
-    Serial.print(encoderRead('C'));Serial.print(" : ");
-    Serial.println(encoderRead('A'));
+    coalRead = encoderRead('C');
+    airRead = encoderRead('A');
+
+    if(count>abs(airAngle-coalAngle)*50) dir = !dir;
+
+    bottomLine = 1000 - count;
+
+    if(dir)
+      count++;
+    else
+      count--;
+      
+    if(coalRead)
+    {
+      coalAngle += coalRead;
+      Coal.write(0);
+      if(coalAngle > 70)
+      {
+        coalAngle = 70;
+      }
+      else if(coalAngle < 0)
+      {
+        coalAngle = 0;
+      }
+    }
+    if(airRead)
+    {
+      airAngle += airRead;
+      AirandVoltage.write(0);
+      if(airAngle > 70)
+        airAngle = 70;
+      else if(airAngle < 0)
+        airAngle = 0;
+    }
     
-//    if(encoderRead('C'))
-//    {
-//      coalAngle += encoderRead('C');
-//      Coal.write(0);
-//      if(coalAngle > 70)
-//        coalAngle = 70;
-//      else if(coalAngle < 0)
-//        coalAngle = 0;
-//    }
-//    if(encoderRead('A'))
-//    {
-//      airAngle += encoderRead('A');
-//      AirandVoltage.write(0);
-//      if(airAngle > 70)
-//        airAngle = 70;
-//      else if(airAngle < 0)
-//        airAngle = 0;
-//    }
-    
-//    airLine = bottomLine*sin(coalAngle)/sin(180-coalAngle-airAngle);
-//    tempLine = sin(airAngle)*airLine;
-//    Serial.print(airLine);Serial.print(" : ");
-//    Serial.print(coalLine);Serial.print(" : ");
-//    Serial.println(tempLine);
-    //servoMove(map(tempLine, ));
-    delay(100);
+    airLine = ((float)bottomLine*sin((float)coalAngle*PI/180))/sin(((float)180-coalAngle-airAngle)*PI/180);
+    tempLine = sin((float)airAngle*PI/180)*airLine;
+    //Serial.println(tempLine, 4);
+    servoMove(map((int)tempLine, 0, 1374, 255, 0));
+    delay(5);
   }
   
   /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
@@ -489,3 +505,7 @@ void fail_state_audio()
   tmrpcm.play("JA.wav");
   delay(5000); 
 }
+
+//int mapValues(int x, int in_min, int in_max, int out_min, int out_max) {
+//  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+//}
