@@ -211,11 +211,12 @@ byte phaseOne()
   
 }
 
-byte phaseTwo() 
+byte phaseTwo()
 {
   /*
    * This function is the second phase of the display.
    */
+   delay(1000);
   if (!serialResponse("PHASE TWO")) error();
   CoalandSteam.write(0);
 
@@ -230,22 +231,23 @@ byte phaseTwo()
     {
       steam += steamRead;
       CoalandSteam.write(0);
-      if(steam > 70)
+      if(steam > 255)
       {
-        steam = 70;
+        steam = 255;
       }
       else if(steam < 0)
       {
         steam = 0;
       }
+      setDCMotor(steam);
+      displayDigitalNumber(steam);
     }
+    
 
     steamRead = encoderRead('C');
   }
   
 
-  if(phaseChange) return 1;
-  delay(1000);
   if(phaseChange) return 1;
   return 3;
 }
@@ -398,7 +400,7 @@ void displayDigitalNumber(float value)
    * Due to it's simplicity, it may be removed at a later date.
    */
 
-  tm.display(value);
+  tm.display(value, true, false, 1);
 
 }
 
