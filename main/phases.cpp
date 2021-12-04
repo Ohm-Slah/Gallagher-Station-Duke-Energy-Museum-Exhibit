@@ -15,7 +15,7 @@ volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 
 Encoder AirandVoltage(2, 3);        
-Encoder Coal(18, 19);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
+Encoder Coal(14  , 15);       /* Creates an Encoder object, using 2 pins. Creates mulitple Encoder objects, where each uses its own 2 pins. The first pin should be capable of interrupts. 
                              * If both pins have interrupt capability, both will be used for best performance. 
                              * Encoder will also work in low performance polling mode if neither pin has interrupts. 
                              */
@@ -27,8 +27,8 @@ TM1637 tm(4, 5);            /* Library instantiation for 7-segment display
 
 const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
-byte ledState = 0;
-long ledCount = 0;
+volatile byte ledState = 0;
+volatile long ledCount = 0;
 
 //integers for the stepper motor 
 const int dirPin = 30;
@@ -53,7 +53,7 @@ void initialization()
    * This fuction is run once on startup. 
    * This is to simply initialize everything needed.
    */
-
+  pinMode(19, OUTPUT);
   pinMode(30, INPUT); //Confirm button
   pinMode(31, INPUT); //Send Power button
   pinMode(22, OUTPUT); //Phase 1 Red LED
@@ -69,6 +69,7 @@ void initialization()
   pinMode(servoPin, OUTPUT); //Servo motor Pin
   pinMode(20, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(20), resetPhases, FALLING);
+  pinMode(21, INPUT_PULLUP);
   
   TCCR1A = 0;
   TIMSK1 = (1 << OCIE1A);
@@ -76,10 +77,12 @@ void initialization()
   Serial.begin(9600);
 
   delay(100);
+
+  StepperSetup();
   
   if (!serialResponse("RESPOND")) error();
                                   //Audio 
-  tmrpcm.speakerPin=9;            //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
+  tmrpcm.speakerPin=46;            //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
                                 //Complimentary Output or Dual Speakers:
                                 //pinMode(10,OUTPUT); Pin pairs: 9,10 Mega: 5-2,6-7,11-12,46-45 
   Serial.begin(9600);
@@ -98,6 +101,7 @@ byte phaseZero()
    * and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
    * When exiting the sleep state, homing everthing like the initialization stage is needed.
    */
+  
   if (!serialResponse("PHASE ZERO")) error();
   delay(1000);
   return 1;
@@ -108,11 +112,95 @@ byte phaseOne()
 {
   /*
    * This function is the first phase of the display.
+   * 
+   * Steps:
+   * play intro vid
+   * play phase 1 instruction vid
+   * balance air and coal encoders until temp servo gauge is at specified position,
+   * simultaneously waiting for confirm button to be pressed
+   * if result on servo gauge is within eror margins, continue onto next phase.
+   * if result is outside error margins, play fail video? three tries?
    */
+   //digitalWrite(enPin, LOW);
+   int prevPos = 0;
+   //tmrpcm.loop(1);
+   //fail_state_audio();
+//   ledBlink(255, 1000);
+//   long i = 0;
+//   while(1)
+//   {
+//    servoMove((int)map(i%255, 0, 255, 255, 0));
+//    Serial.println((int)map(i%255, 0, 255, 255, 0));
+//    if(i%255==0)
+//    {
+//      servoMove(0);
+//      delay(1000);
+//    }
+//    i++;
+//    delay(50);
+//    digitalWrite(19, !digitalRead(21));
+//    setDCMotor(!digitalRead(21)*100);
+//    displayDigitalNumber(encoderRead('A'));
+//    prevPos = encoderRead('C');
+//   }
+
+  //Make sure everything is at an off state while the intro plays 
+  //if (!serialResponse("INTRO")) error();
+
+  //homeStepper();
+  servoMove(0);
+  AirandVoltage.write(0);
+  Coal.write(0);
+  ledBlink(0, 1000);
+  digitalWrite(19, LOW);
+
+  //initialize temporary variables
+  int16_t coalAngle;
+  int16_t airAngle;
+  uint16_t airLine;
+  uint16_t coalLine;
+  uint16_t bottomLine = 5;
+  uint16_t tempLine; 
+  //optimum temp of boiler: 2150 degF
+  
+  while(digitalRead(21))
+  {
+    Serial.print(encoderRead('C'));Serial.print(" : ");
+    Serial.println(encoderRead('A'));
+    
+//    if(encoderRead('C'))
+//    {
+//      coalAngle += encoderRead('C');
+//      Coal.write(0);
+//      if(coalAngle > 70)
+//        coalAngle = 70;
+//      else if(coalAngle < 0)
+//        coalAngle = 0;
+//    }
+//    if(encoderRead('A'))
+//    {
+//      airAngle += encoderRead('A');
+//      AirandVoltage.write(0);
+//      if(airAngle > 70)
+//        airAngle = 70;
+//      else if(airAngle < 0)
+//        airAngle = 0;
+//    }
+    
+//    airLine = bottomLine*sin(coalAngle)/sin(180-coalAngle-airAngle);
+//    tempLine = sin(airAngle)*airLine;
+//    Serial.print(airLine);Serial.print(" : ");
+//    Serial.print(coalLine);Serial.print(" : ");
+//    Serial.println(tempLine);
+    //servoMove(map(tempLine, ));
+    delay(100);
+  }
+  
+  /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
+  if(phaseChange) return 1;
   if (!serialResponse("PHASE ONE")) error();
   if(phaseChange) return 1;
-  delay(1000);
-  if(phaseChange) return 1;
+  
   return 2;
 }
 
@@ -251,13 +339,13 @@ int8_t encoderRead(char enc)
   /*
    * This function takes in a character representing what encoder value you want returned. That value is then returned.
    */
-  if (enc = 'A')                  //if Air Control
+  if (enc == 'A')                  //if Air Control
   {
     return AirandVoltage.read();  //returns the accumlated position (new position)
-  } else if (enc = 'C')           //if Coal Control
+  } else if (enc == 'C')           //if Coal Control
   {
     return Coal.read();           //returns the accumlated position (new position)
-  } else if (enc = 'V')           //if Voltage Control
+  } else if (enc == 'V')           //if Voltage Control
   {
     return AirandVoltage.read();  //returns the accumlated position (new position)
   } else
@@ -303,15 +391,10 @@ void ledStateChange(byte State)
   /*
    * This function takes in a byte (pins 22-29) representing the wanted state of the LEDs.
    */
-   digitalWrite(22, (State&00000001));
-   digitalWrite(23, (State&00000010));
-   digitalWrite(24, (State&00000100));
-   digitalWrite(25, (State&00001000));
-   digitalWrite(26, (State&00010000));
-   digitalWrite(27, (State&00100000));
-   digitalWrite(28, (State&01000000));
-   digitalWrite(29, (State&10000000));
-   //Serial.println(State);
+   for(int i=22; i<30; i++)
+   {
+      digitalWrite(i, ~(State&(0x01<<(i-22) ) ) );
+   }
 }
 
 void ledBlink(byte LED, int Time)

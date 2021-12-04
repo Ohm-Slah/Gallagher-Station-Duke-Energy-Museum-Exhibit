@@ -44,6 +44,7 @@ void completion();
 void sleep();
 void error();
 
+void servoMove(uint16_t position);
 void stepperTick();
 void homeStepper();
 void StepperSetup();
