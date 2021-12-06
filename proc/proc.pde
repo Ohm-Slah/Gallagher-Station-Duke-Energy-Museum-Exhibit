@@ -1,47 +1,99 @@
 import processing.serial.*;
+import processing.video.*;
+import processing.sound.*;
 
+SoundFile file;
+Movie Intro;
+Movie Phase0;
+Movie Phase1;
+Movie Phase2;
+Movie Complete;
+Movie Fail;
 Serial myPort;
 String val;
+int vidToPlay;
 
 void setup() 
 {
   String portName = Serial.list()[1];
   myPort = new Serial(this, portName, 9600);
   myPort.bufferUntil('\n');
-  size(400,400);
-  fill(0);
-  textSize(32);
-  ellipse(300,300,50,50);
+  size(1820, 950);
+
+  //Intro = new Movie(this, "");
+  Phase0 = new Movie(this, "PHASE0.mov");
+  Phase1 = new Movie(this, "PHASE1.mov");
+  Phase2 = new Movie(this, "PHASE2.mov");
+  Complete = new Movie(this, "COMPLETE.mov");
+  Fail = new Movie(this, "FAIL.mov");
+  
+  file = new SoundFile(this, "phone.mp3");
+  
+  file.loop();
+  Phase0.loop();
+  Phase1.loop();
+  Phase2.loop();
+  Complete.loop();
+  Fail.loop();
+  Phase1.stop(); 
+  Phase2.stop(); 
+  Fail.stop(); 
+  Complete.stop();
+  file.stop();
+  Phase1.noLoop();
+  Phase2.noLoop();
+  Complete.noLoop();
+  
 }
 
-void draw()
-{
-
+void movieEvent(Movie myMovie) {
+  myMovie.read();
 }
 
 void serialEvent(Serial myPort)
 {
-  val = myPort.readStringUntil('\n');         // read it and store it in val
+  try {
+    val = myPort.readStringUntil('\n');         // read it and store it in val
   
     if (val != null) 
     {
-      fill(0);
-      textSize(32);
       val = trim(val);
       println(val); //print it out in the console
-      //fill(0);
       switch (val) {
-        case "RESPOND": myPort.write("1");text("INIT", 0, 40); break;
-        case "PHASE ZERO": myPort.write("1");text("Zero", 0, 40); break;
-        case "PHASE ONE": myPort.write("1"); text("One", 0, 40);break;
-        case "PHASE TWO": myPort.write("1"); text("Two", 0, 40);break;
-        case "PHASE THREE": myPort.write("1"); text("Three", 0, 40);break;
-        case "PHASE FOUR": myPort.write("1"); text("Four", 0, 40);break;
-        case "FAILURE": myPort.write("1"); text("Failure", 0, 40);break;
-        case "COMPLETE": myPort.write("1"); text("Complete", 0, 40);break;
-        case "SLEEP": myPort.write("1"); text("Sleep", 0, 40);break;
+        case "RESPOND": myPort.write("1");break;
+        case "PHASE ZERO": myPort.write("1"); Phase1.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase0.play(); vidToPlay = 0; break;
+        case "PHASE ONE": myPort.write("1"); Phase0.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase1.play(); Phase1.noLoop(); vidToPlay = 1; break;
+        case "PHASE TWO": myPort.write("1"); Phase1.stop(); Phase1.noLoop(); Phase2.play(); vidToPlay = 2; break;
+        case "PHASE THREE": myPort.write("1");break;
+        case "PHASE FOUR": myPort.write("1"); break;
+        case "FAILURE": myPort.write("1"); Phase1.stop(); Phase2.stop(); Complete.stop();file.stop(); vidToPlay = 20; break;
+        case "COMPLETE": myPort.write("1"); Complete.play(); Phase1.stop(); Phase2.stop(); Fail.stop(); vidToPlay = 10; break;
+        case "RING": myPort.write("1"); Phase1.stop(); Phase2.stop();file.play();Fail.play(); vidToPlay = 20; break;
+        //case "SLEEP": myPort.write("1"); text("Sleep", 0, 40);break;
         default: break;
       }
-      
     }
+  }
+  catch(RuntimeException e) {
+    e.printStackTrace();
+  }
+  
+}
+
+void draw()
+{
+  try {
+  switch(vidToPlay)
+  {
+   case 0: image(Phase0, 0, 0); break;
+   case 1: image(Phase1, 0, 0); break;
+   case 2: image(Phase2, 0, 0); break;
+   case 10: image(Complete, 0, 0); break;
+   case 20: image(Fail, 0, 0); break;
+   default: break;
+  }
+  }
+  catch(RuntimeException e) {
+    e.printStackTrace();
+  }
 }
