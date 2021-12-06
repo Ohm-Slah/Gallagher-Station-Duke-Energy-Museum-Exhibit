@@ -53,6 +53,7 @@ void initialization()
      This fuction is run once on startup.
      This is to simply initialize everything needed.
   */
+  pinMode(16, INPUT_PULLUP); //Phone Switch
   pinMode(15, OUTPUT); //Light bulb
   pinMode(30, INPUT); //Confirm button
   pinMode(31, INPUT); //Send Power button
@@ -96,6 +97,23 @@ void initialization()
 
 }
 
+void reset()
+{
+  homeStepper();
+
+  AirandVoltage.write(0);
+  CoalandSteam.write(0);
+  ledBlink(0, 1000);
+  digitalWrite(23, HIGH);
+  digitalWrite(25, HIGH);
+  digitalWrite(27, HIGH);
+  digitalWrite(29, HIGH);
+  digitalWrite(15, LOW);
+  servoMove(1);
+  setDCMotor(0);
+  tm.clearScreen();
+}
+
 byte phaseZero()
 {
   /*
@@ -128,16 +146,7 @@ byte phaseOne()
   //fail_state_audio();
 
   //Make sure everything is at an off state while the intro plays
-  homeStepper();
-
-  AirandVoltage.write(0);
-  CoalandSteam.write(0);
-  ledBlink(0, 1000);
-  digitalWrite(15, LOW);
-  servoMove(1);
-  setDCMotor(0);
-  tm.clearScreen();
-  
+  reset();
 
   //initialize temporary variables
   int8_t coalRead = 0;
@@ -158,7 +167,7 @@ byte phaseOne()
     error();
   }
 
-  ledBlink(0xFF, 1000);
+  ledBlink(0B00000001, 1000);
 
   while (digitalRead(21))
   {
@@ -208,7 +217,7 @@ byte phaseOne()
   if (abs(tempLine - 926) < 50 && abs(airAngle - coalAngle) < 5)
   {
     //Serial.println("SUCCESS");
-
+    digitalWrite(23, LOW);
     servoMove(79);
     return 2;
   } else {
@@ -229,6 +238,7 @@ byte phaseTwo()
   tm.colonOff();
   int16_t steamRead = 0;
   int16_t steam = 0;
+  ledBlink(0B00000101, 1000);
 
   while (digitalRead(21))
   {
@@ -255,7 +265,7 @@ byte phaseTwo()
     steamRead = encoderRead('C');
   }
 
-
+  digitalWrite(25, LOW);
   if (phaseChange) return 1;
   return 3;
 }
@@ -267,6 +277,7 @@ byte phaseThree()
      It is currently is in use for a demonstration.
   */
   if (!serialResponse("PHASE THREE")) error();
+  ledBlink(0B00010101, 1000);
   delay(1000);
   CoalandSteam.write(0);
   int16_t steamRead = 0;
@@ -281,19 +292,19 @@ byte phaseThree()
     {
       steam += steamRead;
       CoalandSteam.write(0);
-      if(steam > steamPrev)
+      if (steam > steamPrev)
       {
         digitalWrite(dirPin, LOW);
-        for(int i=steamPrev; i<steam; i++) 
+        for (int i = steamPrev; i < steam; i++)
         {
           stepperTick();
           delay(5);
         }
         steamPrev = steam;
-      } else if(steam < steamPrev)
+      } else if (steam < steamPrev)
       {
         digitalWrite(dirPin, HIGH);
-        for(int i=steamPrev; i>steam; i--) 
+        for (int i = steamPrev; i > steam; i--)
         {
           stepperTick();
           delay(5);
@@ -301,10 +312,13 @@ byte phaseThree()
         steamPrev = steam;
       }
     }
-    
+
   }
+  digitalWrite(27, LOW);
+  digitalWrite(29, LOW);
   digitalWrite(enPin, HIGH);
-  return 4;
+  digitalWrite(15, HIGH);
+  return 10; //temporarily skip phase four
 }
 
 byte phaseFour()
@@ -325,31 +339,30 @@ bool serialResponse(char com[])
 {
   /*
      This function takes a predefined string command and confirms a serial response from the raspberry pi running processing.
-     Predefined commands: "RESPOND" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE"
+     Predefined commands: "RESPOND" "RING" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE"
   */
-    uint8_t attempts = 0;
-  
-    delay(100);
-    while(attempts <= 5)
+  uint8_t attempts = 0;
+
+  delay(1000);
+  while (attempts <= 5)
+  {
+    Serial.println(com);
+    if (Serial.available())
     {
-  Serial.println(com);
-      if (Serial.available())
+      char val = Serial.read();
+      //Serial.println(val);
+      if (val == '1')
       {
-        char val = Serial.read();
-        Serial.println(val);
-        if (val == '1')
-        {
-          return true;
-        } else {
-          return false;
-          attempts++;
-        }
+        return true;
+      } else {
+        return false;
+        attempts++;
       }
-      delay(100);
-      attempts++;
     }
-    return false;
-  return true;
+    delay(2000);
+    attempts++;
+  }
+  return false;
 
 }
 
@@ -358,11 +371,16 @@ void failure()
   /*
      This function is the failure state of the display.
   */
-  delay(2000);
-  fail_state_audio();
+  delay(1000);
+  if (!serialResponse("RING")) error();
+  while(!digitalRead(16)) {};
   if (!serialResponse("FAILURE")) error();
+  //tmrpcm.disable();
+  fail_state_audio();
   delay(5000);
   tmrpcm.disable();
+  
+  while(digitalRead(16)) {};
   return true;
 }
 
@@ -372,7 +390,7 @@ void completion()
      This function is the completion state of the display.
   */
   if (!serialResponse("COMPLETE")) error();
-  delay(1000);
+  delay(5000);
   return true;
 }
 
@@ -465,10 +483,19 @@ void ledStateChange(byte State)
   /*
      This function takes in a byte (pins 22-29) representing the wanted state of the LEDs.
   */
-  for (int i = 22; i < 30; i++)
-  {
-    digitalWrite(i, ~(State & (0x01 << (i - 22) ) ) );
-  }
+//  for (int i = 22; i < 30; i++)
+//  {
+//    digitalWrite(i, ~(ledState & (0x01 << (i - 22) ) ) );
+//  }
+   digitalWrite(22, !(State&0b00000001));
+   //digitalWrite(23, !(State&0b00000010));
+   digitalWrite(24, !(State&0b00000100));
+   //digitalWrite(25, !(State&0b00001000));
+   digitalWrite(26, !(State&0b00010000));
+   //digitalWrite(27, !(State&0b00100000));
+   digitalWrite(28, !(State&0b01000000));
+   //digitalWrite(29, !(State&0b10000000));
+   //Serial.println(State);
 }
 
 void ledBlink(byte LED, int Time)
@@ -549,9 +576,9 @@ void stepperTick()
 ISR(TIMER1_COMPA_vect)
 {
   if (ledCount % 2)
-    ledStateChange(ledState);
-  else
     ledStateChange(0);
+  else
+    ledStateChange(ledState);
 
   ledCount++;
 

@@ -43,6 +43,7 @@ void failure();
 void completion();
 void sleep();
 void error();
+void reset();
 
 void servoMove(uint16_t position);
 void stepperTick();
