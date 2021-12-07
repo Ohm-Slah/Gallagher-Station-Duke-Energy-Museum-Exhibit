@@ -110,7 +110,7 @@ byte phaseZero()
   */
 
   if (!serialResponse("PHASE ZERO")) error();
-  delay(1000);
+  
   return 1;
 
 }
