@@ -43,7 +43,7 @@ void initialization()
   */
   pinMode(PHONESWITCHPIN, INPUT_PULLUP); //Phone Switch
   pinMode(LIGHTBULBSWITCHPIN, OUTPUT); //Light bulb
-  pinMode(31, INPUT); //Send Power button
+  //pinMode(31, INPUT); //Send Power button
   pinMode(P1RLED, OUTPUT); //Phase 1 Red LED
   pinMode(P1GLED, OUTPUT); //Phase 1 Green LED
   pinMode(P2RLED, OUTPUT); //Phase 2 Red LED
