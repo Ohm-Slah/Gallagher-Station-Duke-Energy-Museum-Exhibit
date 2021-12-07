@@ -368,7 +368,6 @@ void failure()
   tmrpcm.disable();
 
   while (digitalRead(PHONESWITCHPIN)) {};
-  return true;
 }
 
 byte completion()
