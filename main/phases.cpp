@@ -371,14 +371,14 @@ void failure()
   return true;
 }
 
-void completion()
+byte completion()
 {
   /*
      This function is the completion state of the display.
   */
   if (!serialResponse("COMPLETE")) error();
   delay(7500);
-  return true;
+  return 0;
 }
 
 void error()

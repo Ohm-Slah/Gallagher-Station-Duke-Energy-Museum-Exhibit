@@ -12,7 +12,6 @@
 #define SETUP_H
 
 //define all of the pins used with particular names for identification //
-#define LIGHTBULBSWITCHPIN 1
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
 #define SEGCLK 4
@@ -21,6 +20,7 @@
 #define MOTOR_PIN 10
 //PINS 11 & 12 CANNOT BE USED FOR PWM
 #define LED_ON_BOARD 13
+#define LIGHTBULBSWITCHPIN 15
 #define PHONESWITCHPIN 16
 #define ENCODER2APIN 18
 #define ENCODER2BPIN 19
@@ -71,7 +71,7 @@ bool serialResponse(char com[]);
 void ledBlink(byte LED, int Time);
 void ledStateChange(byte State);
 void failure();
-void completion();
+byte completion();
 void sleep();
 void error();
 void reset();
