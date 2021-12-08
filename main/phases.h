@@ -11,6 +11,8 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+#define WAITTIME 30000
+
 //define all of the pins used with particular names for identification //
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
@@ -57,6 +59,7 @@
 // instantiate important global variables //
 extern volatile byte currentPhase;
 extern volatile bool phaseChange;
+extern volatile long long lastResponse;
 ////////////////////////////////////////////
 
 // instantiate all functions used in program //

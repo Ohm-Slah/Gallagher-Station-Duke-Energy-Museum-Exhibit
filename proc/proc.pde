@@ -1,5 +1,6 @@
 import processing.serial.*;
 import processing.video.*;
+//codeanticode.gsvideo.*;
 import processing.sound.*;
 
 SoundFile file;
@@ -15,12 +16,6 @@ int vidToPlay;
 
 void setup() 
 {
-  String portName = Serial.list()[1];
-  myPort = new Serial(this, portName, 9600);
-  myPort.bufferUntil('\n');
-  size(1820, 950);
-
-  //Intro = new Movie(this, "");
   Phase0 = new Movie(this, "PHASE0.mov");
   Phase1 = new Movie(this, "PHASE1.mov");
   Phase2 = new Movie(this, "PHASE2.mov");
@@ -28,41 +23,58 @@ void setup()
   Fail = new Movie(this, "FAIL.mov");
   
   file = new SoundFile(this, "phone.mp3");
+  //fullScreen();
+  String portName = Serial.list()[2];
+  myPort = new Serial(this, portName, 9600);
+  myPort.bufferUntil('\n');
+  size(1820, 950);
   
-  file.loop();
+  //delay(5000);
+  //Intro = new Movie(this, "");
+  
+  //delay(5000);
   Phase0.loop();
   Phase1.loop();
   Phase2.loop();
   Complete.loop();
   Fail.loop();
-  Phase1.stop(); 
-  Phase2.stop(); 
-  Fail.stop(); 
-  Complete.stop();
   file.stop();
-  Phase1.noLoop();
-  Phase2.noLoop();
-  Complete.noLoop();
+  Phase0.stop();
+  Phase1.stop();
+  Phase2.stop();
+  Complete.stop();
+  Fail.stop();
+  //file.loop();
+  
+  //Phase0.stop();
+  //Phase1.stop(); 
+  //Phase2.stop(); 
+  //Fail.stop(); 
+  //Complete.stop();
+  //file.stop();
   
 }
 
-void movieEvent(Movie myMovie) {
+void movieEvent(Movie myMovie) 
+{
   myMovie.read();
 }
 
 void serialEvent(Serial myPort)
 {
-  try {
+  try 
+  {
     val = myPort.readStringUntil('\n');         // read it and store it in val
   
-    if (val != null) 
+    if (val != null)  
     {
       val = trim(val);
       println(val); //print it out in the console
-      switch (val) {
+      switch (val) 
+      {
         case "RESPOND": myPort.write("1");break;
         case "PHASE ZERO": myPort.write("1"); Phase1.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase0.play(); vidToPlay = 0; break;
-        case "PHASE ONE": myPort.write("1"); Phase0.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase1.play(); Phase1.noLoop(); vidToPlay = 1; break;
+        case "PHASE ONE": myPort.write("1"); Phase0.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase1.play();  vidToPlay = 1; break;
         case "PHASE TWO": myPort.write("1"); Phase1.stop(); Phase1.noLoop(); Phase2.play(); vidToPlay = 2; break;
         case "PHASE THREE": myPort.write("1");break;
         case "PHASE FOUR": myPort.write("1"); break;
@@ -74,7 +86,8 @@ void serialEvent(Serial myPort)
       }
     }
   }
-  catch(RuntimeException e) {
+  catch(RuntimeException e) 
+  {
     e.printStackTrace();
   }
   
@@ -82,18 +95,20 @@ void serialEvent(Serial myPort)
 
 void draw()
 {
-  try {
-  switch(vidToPlay)
+  try 
   {
-   case 0: image(Phase0, 0, 0); break;
-   case 1: image(Phase1, 0, 0); break;
-   case 2: image(Phase2, 0, 0); break;
-   case 10: image(Complete, 0, 0); break;
-   case 20: image(Fail, 0, 0); break;
-   default: break;
+    switch(vidToPlay)
+    {
+     case 0: image(Phase0, 0, 0); break;
+     case 1: image(Phase1, 0, 0); break;
+     case 2: image(Phase2, 0, 0); break;
+     case 10: image(Complete, 0, 0); break;
+     case 20: image(Fail, 0, 0); break;
+     default: break;
+    }
   }
-  }
-  catch(RuntimeException e) {
+  catch(RuntimeException e) 
+  {
     e.printStackTrace();
   }
 }

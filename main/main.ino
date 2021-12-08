@@ -25,6 +25,8 @@ void loop()
   switch(currentPhase)
   {
     case 0:
+      reset();
+      lastResponse = millis();
       phaseChange = false;
       currentPhase = phaseZero();
     break;

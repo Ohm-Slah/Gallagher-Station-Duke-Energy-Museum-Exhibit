@@ -14,6 +14,7 @@ int angle = 0;
 // reintantiate global use variables
 volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
+volatile long long lastResponse = 0;
 
 // Creates an Encoder object, using 2 pins.
 Encoder AirandVoltage(ENCODER1APIN, ENCODER1BPIN); 
@@ -59,7 +60,7 @@ void initialization()
   attachInterrupt(digitalPinToInterrupt(RESETSWITCHPIN), resetPhases, FALLING);
   pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);
 
-  
+  lastResponse = millis();
 
   TCCR1A = 0;
   TIMSK1 = (1 << OCIE1A);
@@ -69,14 +70,12 @@ void initialization()
 
   StepperSetup();
   initSevenSegment();
-  tmrpcm.speakerPin = SDCSPIN;
+  tmrpcm.speakerPin = AUDIOPIN;
 
   if (!SD.begin(SDCSPIN))
     error();
 
   if (!serialResponse("RESPOND")) error();
-
-  
 
 }
 
@@ -85,19 +84,23 @@ void reset()
   /*
    * This function can be ran when all items on board need to be reset
    */
+  
   homeStepper();
 
-  AirandVoltage.write(0);
-  CoalandSteam.write(0);
+  AirandVoltage.write(1);
+  CoalandSteam.write(1);
   ledBlink(0, 1000);
   digitalWrite(P1GLED, HIGH);
   digitalWrite(P2GLED, HIGH);
   digitalWrite(P3GLED, HIGH);
   digitalWrite(P4GLED, HIGH);
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
-  servoMove(1);
+  //servoMove((int)10);
+  //delay(100);
+  //Serial.println("RIGHT HERE");
   setDCMotor(0);
   tm.clearScreen();
+  
 }
 
 byte phaseZero()
@@ -110,7 +113,7 @@ byte phaseZero()
   */
 
   if (!serialResponse("PHASE ZERO")) error();
-  
+  while (!phaseChange) {};
   return 1;
 
 }
@@ -158,6 +161,7 @@ byte phaseOne()
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
+    if (lastResponse + WAITTIME < millis()) return 0;
     coalRead = encoderRead('C');
     airRead = encoderRead('A');
 
@@ -172,6 +176,7 @@ byte phaseOne()
 
     if (coalRead)
     {
+      lastResponse = millis();
       coalAngle += coalRead;
       CoalandSteam.write(0);
       if (coalAngle > 70)
@@ -185,6 +190,7 @@ byte phaseOne()
     }
     if (airRead)
     {
+      lastResponse = millis();
       airAngle += airRead;
       AirandVoltage.write(0);
       if (airAngle > 70)
@@ -220,38 +226,52 @@ byte phaseTwo()
   */
   delay(1000);
   if (!serialResponse("PHASE TWO")) error();
+  
   CoalandSteam.write(0);
   tm.colonOff();
   int16_t steamRead = 0;
-  int16_t steam = 0;
-  ledBlink(0B00000101, 1000);
+  int16_t steam = 23;
+  ledBlink(0B00000100, 1000);
+  setDCMotor(23);
 
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
-
+    if (lastResponse + WAITTIME < millis()) return 0;
+    
     if (steamRead)
     {
+      lastResponse = millis();
       steam += steamRead;
       CoalandSteam.write(0);
-      if (steam > 255)
+      if (steam > 75)
       {
-        steam = 255;
+        steam = 75;
       }
-      else if (steam < 0)
+      else if (steam < 23)
       {
-        steam = 0;
+        steam = 23;
       }
-      setDCMotor(steam);
       tm.clearScreen();
-      tm.display(steam, true, false, 0);
+      setDCMotor(steam);
+      tm.display(map(steam, 23, 75, 30, 68), true, false, 0);
+      
     }
 
 
     steamRead = encoderRead('C');
   }
-
-  digitalWrite(P2GLED, LOW);
+  
+  if (abs(steam - 64) < 3)
+  {
+    //Serial.println("SUCCESS");
+    digitalWrite(P2GLED, LOW);
+    setDCMotor(64);
+    return 3;
+  } else {
+    failure();
+    return 2;
+  }
   if (phaseChange) return 1;
   return 3;
 }
@@ -263,7 +283,7 @@ byte phaseThree()
      It is currently is in use for a demonstration.
   */
   if (!serialResponse("PHASE THREE")) error();
-  ledBlink(0B00010101, 1000);
+  ledBlink(0B00010000, 1000);
   delay(1000);
   CoalandSteam.write(0);
   int16_t steamRead = 0;
@@ -273,9 +293,11 @@ byte phaseThree()
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
+    if (lastResponse + WAITTIME < millis()) return 0;
     steamRead = encoderRead('C');
     if (steamRead)
     {
+      lastResponse = millis();
       steam += steamRead;
       CoalandSteam.write(0);
       if (steam > steamPrev)
