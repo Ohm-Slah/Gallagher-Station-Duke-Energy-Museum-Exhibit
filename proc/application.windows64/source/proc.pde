@@ -38,13 +38,13 @@ void setup()
   Phase2.loop();
   Complete.loop();
   Fail.loop();
-  file.play();
-  Phase0.play();
-  Phase1.play();
-  Phase2.play();
-  Complete.play();
-  Fail.play();
-  file.loop();
+  file.stop();
+  Phase0.stop();
+  Phase1.stop();
+  Phase2.stop();
+  Complete.stop();
+  Fail.stop();
+  //file.loop();
   
   //Phase0.stop();
   //Phase1.stop(); 
