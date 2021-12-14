@@ -75,12 +75,12 @@ void serialEvent(Serial myPort)
         case "RESPOND": myPort.write("1");break;
         case "PHASE ZERO": myPort.write("1"); Phase1.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase0.play(); vidToPlay = 0; break;
         case "PHASE ONE": myPort.write("1"); Phase0.stop(); Phase2.stop(); Fail.stop(); Complete.stop(); Phase1.play();  vidToPlay = 1; break;
-        case "PHASE TWO": myPort.write("1"); Phase1.stop(); Phase1.noLoop(); Phase2.play(); vidToPlay = 2; break;
+        case "PHASE TWO": myPort.write("1"); Phase1.stop(); Phase1.noLoop(); Fail.stop();Complete.stop(); Phase2.play(); vidToPlay = 2; break;
         case "PHASE THREE": myPort.write("1");break;
         case "PHASE FOUR": myPort.write("1"); break;
-        case "FAILURE": myPort.write("1"); Phase1.stop(); Phase2.stop(); Complete.stop();file.stop(); vidToPlay = 20; break;
-        case "COMPLETE": myPort.write("1"); Complete.play(); Phase1.stop(); Phase2.stop(); Fail.stop(); vidToPlay = 10; break;
-        case "RING": myPort.write("1"); Phase1.stop(); Phase2.stop();file.play();Fail.play(); vidToPlay = 20; break;
+        case "FAILURE": myPort.write("1"); Phase0.stop();Phase1.stop(); Phase2.stop(); Complete.stop();file.stop(); vidToPlay = 20; break;
+        case "COMPLETE": myPort.write("1"); Phase0.stop();Complete.play(); Phase1.stop(); Phase2.stop(); Fail.stop(); vidToPlay = 10; break;
+        case "RING": myPort.write("1"); Phase0.stop();Phase1.stop(); Phase2.stop();file.play();Fail.play(); vidToPlay = 20; break;
         //case "SLEEP": myPort.write("1"); text("Sleep", 0, 40);break;
         default: break;
       }

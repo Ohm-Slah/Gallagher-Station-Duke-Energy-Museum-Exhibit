@@ -79,6 +79,8 @@ void initialization()
 
 }
 
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
+
 void reset()
 {
   /*
@@ -205,8 +207,8 @@ byte phaseOne()
     servoMove(map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
   }
-
-  if (abs(tempLine - 926) < 50 && abs(airAngle - coalAngle) < 5)
+ Serial.println(tempLine);
+  if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
     //Serial.println("SUCCESS");
     digitalWrite(P1GLED, LOW);
@@ -254,15 +256,15 @@ byte phaseTwo()
       }
       tm.clearScreen();
       setDCMotor(steam);
-      tm.display(map(steam, 23, 75, 30, 68), true, false, 0);
+      tm.display(map(steam, 23, 75, 30, 66), true, false, 0);
       
     }
 
 
     steamRead = encoderRead('C');
   }
-  
-  if (abs(steam - 64) < 3)
+  Serial.println(steam);
+  if (abs(steam - 67) < 3)
   {
     //Serial.println("SUCCESS");
     digitalWrite(P2GLED, LOW);
@@ -382,14 +384,18 @@ void failure()
   */
   delay(1000);
   if (!serialResponse("RING")) error();
-  while (!digitalRead(PHONESWITCHPIN)) {};
+  while (!digitalRead(PHONESWITCHPIN)) {
+    if (phaseChange) return;
+  }
   if (!serialResponse("FAILURE")) error();
   //tmrpcm.disable();
   fail_state_audio();
   delay(5000);
   tmrpcm.disable();
 
-  while (digitalRead(PHONESWITCHPIN)) {};
+  while (digitalRead(PHONESWITCHPIN)) {
+    if (phaseChange) return;
+  }
 }
 
 byte completion()
@@ -408,13 +414,14 @@ void error()
      This function is the error state of the display. Only call this if a reset is necessary.
   */
   Serial.println("CRITICAL ERROR");
-  while (1)
+  for(int i=0; i<20; i++)
   {
     digitalWrite(LED_ON_BOARD, HIGH);
     delay(200);
     digitalWrite(LED_ON_BOARD, LOW);
     delay(200);
   }
+  resetFunc();  //call reset
 }
 
 void resetPhases()
