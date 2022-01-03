@@ -73,7 +73,10 @@ void initialization()
   tmrpcm.speakerPin = AUDIOPIN;
 
   if (!SD.begin(SDCSPIN))
+  {
+    Serial.println("NO SD CARD");
     error();
+  }
 
   if (!serialResponse("RESPOND")) error();
 
