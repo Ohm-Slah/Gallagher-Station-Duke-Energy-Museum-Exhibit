@@ -17,8 +17,10 @@ volatile byte currentPhase = 0;
 volatile long long lastResponse = 0;
 
 // Creates an Encoder object, using 2 pins.
-Encoder AirandVoltage(ENCODER1APIN, ENCODER1BPIN); 
-Encoder CoalandSteam(ENCODER2APIN, ENCODER2BPIN); 
+Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
+Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
+Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
+Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
 
 // Library instantiation for 7-segment display
 TM1637 tm(SEGCLK, SEGDIO);  
@@ -26,7 +28,7 @@ TM1637 tm(SEGCLK, SEGDIO);
 // This is for the audio
 TMRpcm tmrpcm; 
                                
-// intantiate variables for led blinking interrupts
+// instantiate variables for led blinking interrupts
 const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
 volatile byte ledState = 0;
@@ -92,8 +94,8 @@ void reset()
   
   homeStepper();
 
-  AirandVoltage.write(1);
-  CoalandSteam.write(1);
+  Air.write(1);
+  Coal.write(1);
   ledBlink(0, 1000);
   digitalWrite(P1GLED, HIGH);
   digitalWrite(P2GLED, HIGH);
@@ -183,7 +185,7 @@ byte phaseOne()
     {
       lastResponse = millis();
       coalAngle += coalRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (coalAngle > 70)
       {
         coalAngle = 70;
@@ -197,7 +199,7 @@ byte phaseOne()
     {
       lastResponse = millis();
       airAngle += airRead;
-      AirandVoltage.write(0);
+      Air.write(0);
       if (airAngle > 70)
         airAngle = 70;
       else if (airAngle < 0)
@@ -232,7 +234,7 @@ byte phaseTwo()
   delay(1000);
   if (!serialResponse("PHASE TWO")) error();
   
-  CoalandSteam.write(0);
+  Coal.write(0);
   tm.colonOff();
   int16_t steamRead = 0;
   int16_t steam = 23;
@@ -248,7 +250,7 @@ byte phaseTwo()
     {
       lastResponse = millis();
       steam += steamRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (steam > 75)
       {
         steam = 75;
@@ -290,7 +292,7 @@ byte phaseThree()
   if (!serialResponse("PHASE THREE")) error();
   ledBlink(0B00010000, 1000);
   delay(1000);
-  CoalandSteam.write(0);
+  Coal.write(0);
   int16_t steamRead = 0;
   int16_t steam = 0;
   int16_t steamPrev = 0;
@@ -304,7 +306,7 @@ byte phaseThree()
     {
       lastResponse = millis();
       steam += steamRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (steam > steamPrev)
       {
         digitalWrite(DIRPIN, LOW);
@@ -451,13 +453,13 @@ int8_t encoderRead(char enc)
   */
   if (enc == 'A')                  //if Air Control
   {
-    return AirandVoltage.read();  //returns the accumlated position (new position)
+    return Air.read();  //returns the accumlated position (new position)
   } else if (enc == 'C')           //if Coal Control
   {
-    return CoalandSteam.read();           //returns the accumlated position (new position)
+    return Coal.read();           //returns the accumlated position (new position)
   } else if (enc == 'V')           //if Voltage Control
   {
-    return AirandVoltage.read();  //returns the accumlated position (new position)
+    return Air.read();  //returns the accumlated position (new position)
   } else
   {
     return;

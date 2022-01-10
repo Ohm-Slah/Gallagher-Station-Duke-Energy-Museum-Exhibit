@@ -44,6 +44,12 @@
 //50, 51, & 52 are used by the SD card reader
 #define SDCSPIN 53
 ////////////////////////////////////////////////////////////////////////
+//these pins need pin definitions
+#define ENCODER3APIN 100
+#define ENCODER3BPIN 100
+#define ENCODER4APIN 100
+#define ENCODER4BPIN 100
+////////////////////////////////////////////////////////////////////////
 
 
 //include all libraries used //
