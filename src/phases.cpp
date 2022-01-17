@@ -1,12 +1,22 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/6/22
+ * Last edit:         1/17/22
+ * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
+ * 
+ * Datasheets:
+ * Rotary encoders: https://www.ctscorp.com/wp-content/uploads/288.pdf
+ * 
 */
 
 #include "phases.h"
+// TODO rework phases 0, 1, and 2
+// TODO write phases 3 and 4
+// TODO add deep sleep mode 
+
+// TODO object orient phone code for greater readability
 
 // reinstantiate global use variables
 volatile bool phaseChange = false;
@@ -17,12 +27,14 @@ volatile long long lastResponse = 0;
 int angle = 0;
 
 // Create an Encoder instances, using 2 pins each.
+// TODO rework all of the rotary encoders for 3-pin config
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
 Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
 Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
 Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
 
 // Library instantiation for 7-segment display
+//TODO Write new 7-seg implementation code
 TM1637 tm(SEGCLK, SEGDIO);  
 
 // Create SD Card audio instance
@@ -36,6 +48,7 @@ volatile byte ledState = 0;
 volatile long ledCount = 0;
 
 // variables for the stepper motor
+// TODO object orient stepper motor code for increased readability
 const int stepsPerRevolution = 200;
 long stepperPosition;
 
