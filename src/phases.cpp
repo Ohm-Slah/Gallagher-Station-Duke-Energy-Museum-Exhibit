@@ -1,46 +1,62 @@
 /*
-   File name:         "phases.cpp"
-   Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
-   Last edit:         12/6/21
-   Code usage:
-   This is a file containing all functions used in each of the five phases of the "main.ino" file.
+ * File name:         "phases.cpp"
+ * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
+ * Last edit:         1/17/22
+ * 
+ * Code usage:
+ * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
+ * 
+ * Datasheets:
+ * Rotary encoders: https://www.ctscorp.com/wp-content/uploads/288.pdf
+ * 
 */
 
 #include "phases.h"
+// TODO rework phases 0, 1, and 2
+// TODO write phases 3 and 4
+// TODO add deep sleep mode 
 
-// Create a variable to store the servo position
-int angle = 0;
+// TODO object orient phone code for greater readability
 
-// reintantiate global use variables
+// reinstantiate global use variables
 volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 volatile long long lastResponse = 0;
 
-// Creates an Encoder object, using 2 pins.
-Encoder AirandVoltage(ENCODER1APIN, ENCODER1BPIN); 
-Encoder CoalandSteam(ENCODER2APIN, ENCODER2BPIN); 
+// Create a variable to store the servo position
+int angle = 0;
+
+// Create an Encoder instances, using 2 pins each.
+// TODO rework all of the rotary encoders for 3-pin config
+Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
+Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
+Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
+Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
 
 // Library instantiation for 7-segment display
+//TODO Write new 7-seg implementation code
 TM1637 tm(SEGCLK, SEGDIO);  
 
-// This is for the audio
+// Create SD Card audio instance
 TMRpcm tmrpcm; 
                                
-// intantiate variables for led blinking interrupts
+// instantiate variables for led blinking interrupts
+// TODO Refactor and redo timer stuff
 const uint16_t halfTwoSec = 31250;
 const uint16_t fullFourSec = 62500;
 volatile byte ledState = 0;
 volatile long ledCount = 0;
 
 // variables for the stepper motor
+// TODO object orient stepper motor code for increased readability
 const int stepsPerRevolution = 200;
 long stepperPosition;
 
 void initialization()
 {
   /*
-     This fuction is run once on startup.
-     This is to simply initialize everything needed.
+   * This fuction is run once on startup.
+   * This is to simply initialize everything needed.
   */
   pinMode(PHONESWITCHPIN, INPUT_PULLUP); //Phone Switch
   pinMode(LIGHTBULBSWITCHPIN, OUTPUT); //Light bulb
@@ -92,8 +108,8 @@ void reset()
   
   homeStepper();
 
-  AirandVoltage.write(1);
-  CoalandSteam.write(1);
+  Air.write(1);
+  Coal.write(1);
   ledBlink(0, 1000);
   digitalWrite(P1GLED, HIGH);
   digitalWrite(P2GLED, HIGH);
@@ -157,9 +173,7 @@ byte phaseOne()
   uint8_t count = 0;
 
   /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
-  if (!serialResponse("PHASE ONE")) {
-    error();
-  }
+  if (!serialResponse("PHASE ONE")) error();
 
   ledBlink(0B00000001, 1000);
 
@@ -183,7 +197,7 @@ byte phaseOne()
     {
       lastResponse = millis();
       coalAngle += coalRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (coalAngle > 70)
       {
         coalAngle = 70;
@@ -197,7 +211,7 @@ byte phaseOne()
     {
       lastResponse = millis();
       airAngle += airRead;
-      AirandVoltage.write(0);
+      Air.write(0);
       if (airAngle > 70)
         airAngle = 70;
       else if (airAngle < 0)
@@ -232,7 +246,7 @@ byte phaseTwo()
   delay(1000);
   if (!serialResponse("PHASE TWO")) error();
   
-  CoalandSteam.write(0);
+  Coal.write(0);
   tm.colonOff();
   int16_t steamRead = 0;
   int16_t steam = 23;
@@ -248,7 +262,7 @@ byte phaseTwo()
     {
       lastResponse = millis();
       steam += steamRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (steam > 75)
       {
         steam = 75;
@@ -290,7 +304,7 @@ byte phaseThree()
   if (!serialResponse("PHASE THREE")) error();
   ledBlink(0B00010000, 1000);
   delay(1000);
-  CoalandSteam.write(0);
+  Coal.write(0);
   int16_t steamRead = 0;
   int16_t steam = 0;
   int16_t steamPrev = 0;
@@ -304,7 +318,7 @@ byte phaseThree()
     {
       lastResponse = millis();
       steam += steamRead;
-      CoalandSteam.write(0);
+      Coal.write(0);
       if (steam > steamPrev)
       {
         digitalWrite(DIRPIN, LOW);
@@ -449,15 +463,15 @@ int8_t encoderRead(char enc)
   /*
      This function takes in a character representing what encoder value you want returned. That value is then returned.
   */
-  if (enc == 'A')                  //if Air Control
+  if (enc == 'A')           //if Air Control
   {
-    return AirandVoltage.read();  //returns the accumlated position (new position)
-  } else if (enc == 'C')           //if Coal Control
+    return Air.read();      //returns the accumlated position (new position)
+  } else if (enc == 'C')    //if Coal Control
   {
-    return CoalandSteam.read();           //returns the accumlated position (new position)
-  } else if (enc == 'V')           //if Voltage Control
+    return Coal.read();     //returns the accumlated position (new position)
+  } else if (enc == 'V')    //if Voltage Control
   {
-    return AirandVoltage.read();  //returns the accumlated position (new position)
+    return Air.read();      //returns the accumlated position (new position)
   } else
   {
     return;
