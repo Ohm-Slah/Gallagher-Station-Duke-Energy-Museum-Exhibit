@@ -27,7 +27,6 @@ volatile long long lastResponse = 0;
 int angle = 0;
 
 // Create an Encoder instances, using 2 pins each.
-// TODO rework all of the rotary encoders for 3-pin config
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
 Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
 Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
@@ -39,13 +38,16 @@ TM1637 tm(SEGCLK, SEGDIO);
 
 // Create SD Card audio instance
 TMRpcm tmrpcm; 
-                               
-// instantiate variables for led blinking interrupts
-// TODO Refactor and redo timer stuff
-const uint16_t halfTwoSec = 31250;
-const uint16_t fullFourSec = 62500;
-volatile byte ledState = 0;
-volatile long ledCount = 0;
+
+// Create LED instances that can be modified individually with minimal interaction
+TimedBlink GreenLED1(P1GLED);
+TimedBlink GreenLED2(P2GLED);
+TimedBlink GreenLED3(P3GLED);
+TimedBlink GreenLED4(P4GLED);
+TimedBlink RedLED1(P1RLED);
+TimedBlink RedLED2(P2RLED);
+TimedBlink RedLED3(P3RLED);
+TimedBlink RedLED4(P4RLED);
 
 // variables for the stepper motor
 // TODO object orient stepper motor code for increased readability
@@ -78,8 +80,6 @@ void initialization()
 
   lastResponse = millis();
 
-  TCCR1A = 0;
-  TIMSK1 = (1 << OCIE1A);
   sei();
   Serial.begin(9600);
   delay(100);
@@ -110,11 +110,16 @@ void reset()
 
   Air.write(1);
   Coal.write(1);
-  ledBlink(0, 1000);
-  digitalWrite(P1GLED, HIGH);
-  digitalWrite(P2GLED, HIGH);
-  digitalWrite(P3GLED, HIGH);
-  digitalWrite(P4GLED, HIGH);
+
+  RedLED1.blinkOff();
+  RedLED2.blinkOff();
+  RedLED3.blinkOff();
+  RedLED4.blinkOff();
+  GreenLED1.blinkOff();
+  GreenLED2.blinkOff();
+  GreenLED3.blinkOff();
+  GreenLED4.blinkOff();
+
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   //servoMove((int)10);
   //delay(100);
@@ -132,7 +137,7 @@ byte phaseZero()
      When exiting the sleep state, reseting function is needed.
      This currently does nothing.
   */
-
+  phaseChangeLEDState(0);
   if (!serialResponse("PHASE ZERO")) error();
   while (!phaseChange) {};
   return 1;
@@ -175,7 +180,7 @@ byte phaseOne()
   /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
   if (!serialResponse("PHASE ONE")) error();
 
-  ledBlink(0B00000001, 1000);
+  phaseChangeLEDState(1);
 
   while (digitalRead(CONFIRMBUTTONPIN))
   {
@@ -250,7 +255,7 @@ byte phaseTwo()
   tm.colonOff();
   int16_t steamRead = 0;
   int16_t steam = 23;
-  ledBlink(0B00000100, 1000);
+  phaseChangeLEDState(2);
   setDCMotor(23);
 
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -302,7 +307,7 @@ byte phaseThree()
      It is currently is in use for a demonstration.
   */
   if (!serialResponse("PHASE THREE")) error();
-  ledBlink(0B00010000, 1000);
+  phaseChangeLEDState(3);
   delay(1000);
   Coal.write(0);
   int16_t steamRead = 0;
@@ -355,7 +360,7 @@ byte phaseFour()
      This phase currently does nothing.
   */
   if (!serialResponse("PHASE FOUR")) error();
-
+  phaseChangeLEDState(4);
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
@@ -421,6 +426,7 @@ byte completion()
      This function is the completion state of the display.
   */
   if (!serialResponse("COMPLETE")) error();
+  phaseChangeLEDState(10);
   delay(7500);
   return 0;
 }
@@ -448,6 +454,82 @@ void resetPhases()
   */
   phaseChange = true;
   currentPhase = 1;
+}
+
+void phaseChangeLEDState(uint8_t phase)
+{
+  /*
+   *  This function changes the state of all of the led's according to what phase number is sent to it.
+  */
+  switch (phase)
+  {
+    case 0:
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blinkOff();
+      RedLED2.blinkOff();
+      RedLED3.blinkOff();
+      RedLED4.blinkOff();
+    }
+    case 1:
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blink(500, 500);
+      RedLED2.blinkOff();
+      RedLED3.blinkOff();
+      RedLED4.blinkOff();
+    }
+    case 2:
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED2.blink(500, 500);
+      RedLED3.blinkOff();
+      RedLED4.blinkOff();
+    }
+    case 3:
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED3.blink(500, 500);
+      RedLED4.blinkOff();
+    }
+    case 4:
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED3.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED4.blink(500,500);
+    }
+    case 10:  //phase 'complete'
+    {
+      GreenLED1.blinkOff();
+      GreenLED2.blinkOff();
+      GreenLED3.blinkOff();
+      GreenLED4.blinkOff();
+      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED3.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED4.blinkOff(); digitalWrite(P1GLED, LOW);
+    }
+  }
 }
 
 void servoMove(uint16_t position)
@@ -508,68 +590,6 @@ void setDCMotor(uint16_t pwmValue)
   analogWrite(MOTOR_PIN, pwmValue);
 }
 
-
-
-void ledStateChange(byte State)
-{
-  /*
-     This function takes in a byte (pins 22-29) representing the wanted state of the LEDs.
-  */
-  //  for (int i = 22; i < 30; i++)
-  //  {
-  //    digitalWrite(i, ~(ledState & (0x01 << (i - 22) ) ) );
-  //  }
-  digitalWrite(P1RLED, !(State & 0b00000001));
-  //digitalWrite(23, !(State&0b00000010));
-  digitalWrite(P2RLED, !(State & 0b00000100));
-  //digitalWrite(25, !(State&0b00001000));
-  digitalWrite(P3RLED, !(State & 0b00010000));
-  //digitalWrite(27, !(State&0b00100000));
-  digitalWrite(P4RLED, !(State & 0b01000000));
-  //digitalWrite(29, !(State&0b10000000));
-  //Serial.println(State);
-}
-
-void ledBlink(byte LED, int Time)
-{
-  /*
-     This function takes in a byte to select which pin to blink, and a int for how long to blink in ms.
-     The delay can be 500ms, 1000ms, 2000ms, or 4000ms.
-  */
-  ledState = LED;
-  switch (Time)
-  {
-    case 500:
-      TCCR1B |= (1 << CS12);
-      TCCR1B &= ~(1 << CS11);
-      TCCR1B &= ~(1 << CS10);
-      TCNT1 = 0;
-      OCR1A = halfTwoSec;
-      break;
-    case 1000:
-      TCCR1B |= (1 << CS12);
-      TCCR1B &= ~(1 << CS11);
-      TCCR1B &= ~(1 << CS10);
-      TCNT1 = 0;
-      OCR1A = fullFourSec;
-      break;
-    case 2000:
-      TCCR1B |= (1 << CS12);
-      TCCR1B &= ~(1 << CS11);
-      TCCR1B |= (1 << CS10);
-      TCNT1 = 0;
-      OCR1A = halfTwoSec;
-      break;
-    case 4000:
-      TCCR1B |= (1 << CS12);
-      TCCR1B &= ~(1 << CS11);
-      TCCR1B |= (1 << CS10);
-      TCNT1 = 0;
-      OCR1A = fullFourSec;
-      break;
-  }
-}
-
 void StepperSetup()
 {
   // Declare pins as Outputs
@@ -602,18 +622,6 @@ void stepperTick()
   delayMicroseconds(1);
   digitalWrite(STEPPIN, LOW);
   stepperPosition = (stepperPosition % stepsPerRevolution) + 1;
-}
-
-
-ISR(TIMER1_COMPA_vect)
-{
-  if (ledCount % 2)
-    ledStateChange(0);
-  else
-    ledStateChange(ledState);
-
-  ledCount++;
-
 }
 
 void fail_state_audio()

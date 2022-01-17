@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/6/22
+ * Last edit:         1/17/22
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -60,7 +60,7 @@
 #include <SD.h>
 #include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
 #include <SPI.h>
-#include <TimedBlink.h> //https://github.com/lpasqualis/TimedBlink
+#include "TimedBlink.h"
 ///////////////////////////////////////////////////////////////////////
 
 
@@ -79,14 +79,13 @@ byte phaseThree();
 byte phaseFour();
 
 bool serialResponse(char com[]);
-void ledBlink(byte LED, int Time);
-void ledStateChange(byte State);
 void failure();
 byte completion();
 void sleep();
 void error();
 void reset();
 
+void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
 void stepperTick();
 void homeStepper();
