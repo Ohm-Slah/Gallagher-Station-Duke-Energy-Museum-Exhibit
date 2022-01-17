@@ -58,8 +58,9 @@
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
 #include <SD.h>
-#include <TMRpcm.h>   //https://www.arduino.cc/reference/en/libraries/tmrpcm/
+#include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
 #include <SPI.h>
+#include <TimedBlink.h> //https://github.com/lpasqualis/TimedBlink
 ///////////////////////////////////////////////////////////////////////
 
 
