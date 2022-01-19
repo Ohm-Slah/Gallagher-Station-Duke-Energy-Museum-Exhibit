@@ -12,6 +12,7 @@
 #define SETUP_H
 
 #define WAITTIME 30000
+#define SLEEPTIME 10800000
 
 /////////////////////////////////////////////////////////////////////////
 //define all of the pins used with particular names for identification //

@@ -150,7 +150,7 @@ byte phaseZero()
      This currently does nothing.
   */
   if (!serialResponse("PHASE ZERO")) error();
-  while (!phaseChange) if (lastResponse + WAITTIME < millis()) deepSleep();
+  while (!phaseChange) if (lastResponse + SLEEPTIME < millis()) deepSleep();
   return 1;
 
 }
