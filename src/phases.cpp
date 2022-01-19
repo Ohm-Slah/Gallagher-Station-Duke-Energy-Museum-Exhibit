@@ -588,12 +588,7 @@ int8_t encoderRead(char enc)
   } else if (enc == 'V')    //if Voltage Control
   {
     return Air.read();      //returns the accumlated position (new position)
-  } else
-  {
-    throw("encoderRead() function only accepts the following characters: 'A' 'C' 'V'");
   }
-
-
 }
 
 void initSevenSegment()

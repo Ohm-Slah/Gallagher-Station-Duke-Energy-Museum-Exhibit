@@ -79,6 +79,7 @@ byte phaseThree();
 byte phaseFour();
 
 bool serialResponse(char com[]);
+bool serialWait();
 void failure();
 byte completion();
 void sleep();
