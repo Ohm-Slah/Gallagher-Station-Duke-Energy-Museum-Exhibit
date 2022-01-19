@@ -52,7 +52,6 @@
 #define ENCODER4BPIN 100
 ////////////////////////////////////////////////////////////////////////
 
-
 //include all libraries used //
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder

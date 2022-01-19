@@ -1,18 +1,30 @@
+#
+# File name:         "playvideo.py"
+# Contributor(s):    Elliot Eickholtz
+# Last edit:         1/19/22
+# Code usage:
+# This code is intended to run on a Raspberry Pi with a USB serial connection to the Arduino Mega
+# When a predefined serial command is recieved, the appropriate video and audio will play
+# on the HDMI-connected screen from the Raspberry Pi using OMXPlayer.
+
+# TODO retrieve updated code from Raspberry Pi, and apply here.
+
 import sys
 import os
 from subprocess import Popen
 import psutil
 import serial
-#
-movie1 = "/home/pi/Desktop/TEST.mp4"
+
 phasezero = "/home/pi/Desktop/main/data/PHASE0.mov"
 phaseone = "/home/pi/Desktop/main/data/PHASE1.mov"
 phasetwo = "/home/pi/Desktop/main/data/PHASE2.mov"
 complete = "/home/pi/Desktop/main/data/COMPLETE.mov"
 fail = "/home/pi/Desktop/main/data/FAIL.mov"
 
+# TODO fix changing serial port
 ser = serial.Serial('/dev/ttyACM0')
 
+# TODO remove unused print functions
 print(ser.name)
 
 n = 0
@@ -48,7 +60,7 @@ while True:
             #cmd = "omxplayer -o local --layer %d %s "%(n,phasezero)
             Popen(['omxplayer', "--adev", "local", "--loop", "--layer","%d"%(n), "%s"%(phasezero)])
             #os.system(cmd)
-            killoldplayers(players)
+            killoldplayers(players) # TODO investigate why this is the only phase with this
         elif "PHASE ONE" in s:
             print("phase one")
             ser.write('1')
@@ -79,6 +91,10 @@ while True:
             print("ring phone")
             ser.write('1')
             Popen(['omxplayer', "--adev", "local", "--loop", "--layer","%d"%(n), "%s"%(fail)])
+        elif "SLEEP" in s:
+            print("deep sleep")
+            ser.write('1')
+
         killoldplayers(players)
     
 
