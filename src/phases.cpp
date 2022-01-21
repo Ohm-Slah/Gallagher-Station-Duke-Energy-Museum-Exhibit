@@ -27,7 +27,6 @@ volatile long long lastResponse = 0;
 int angle = 0;
 
 // Create an Encoder instances, using 2 pins each.
-// TODO rework all of the rotary encoders for 3-pin config
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
 Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
 Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
