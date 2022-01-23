@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/17/22
+ * Last edit:         1/19/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -14,7 +14,6 @@
 #include "phases.h"
 // TODO rework phases 0, 1, and 2
 // TODO write phases 3 and 4
-// TODO add deep sleep mode 
 
 // TODO object orient phone code for greater readability
 
@@ -107,6 +106,7 @@ void reset()
    */
   
   homeStepper();
+  phaseChangeLEDState(0);
 
   Air.write(1);
   Coal.write(1);
@@ -129,6 +129,18 @@ void reset()
   
 }
 
+void deepSleep()
+{
+  /*
+      This function is called after a great length of time has passed
+      with no interaction with the controls. Ideally, this would only
+      be called if the display was kept on after closing time at the 
+      mueseum. This is simply an attempt to save on power consumption.
+  */
+  if (!serialResponse("SLEEP")) error();
+  while (!phaseChange);
+}
+
 byte phaseZero()
 {
   /*
@@ -137,12 +149,13 @@ byte phaseZero()
      When exiting the sleep state, reseting function is needed.
      This currently does nothing.
   */
-  phaseChangeLEDState(0);
   if (!serialResponse("PHASE ZERO")) error();
-  while (!phaseChange) {};
+  while (!phaseChange) if (lastResponse + SLEEPTIME < millis()) deepSleep();
   return 1;
 
 }
+
+// TODO add update blink virtually everywhere you can
 
 byte phaseOne()
 {
@@ -156,9 +169,9 @@ byte phaseOne()
      if result on servo gauge is within eror margins, continue onto next phase.
      if result is outside error margins, play fail video
   */
-  int prevPos = 0;
-  //tmrpcm.loop(1);
-  //fail_state_audio();
+  
+  //Begin introduction video
+  if (!serialResponse("INTRO")) error();
 
   //Make sure everything is at an off state while the intro plays
   reset();
@@ -177,9 +190,18 @@ byte phaseOne()
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
 
-  /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN));
+
+  // Reset lastResonse to avoid resetting to phaseZero due to inactivity
+  // after watching the introduction video.
+  lastResponse = millis();
+
+  // Begin phase 1 video.
   if (!serialResponse("PHASE ONE")) error();
 
+  // change state of external LEDs to phase 1 state.
   phaseChangeLEDState(1);
 
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -399,6 +421,18 @@ bool serialResponse(char com[])
 
 }
 
+bool serialWait()
+{
+  if(Serial.available())
+  {
+    char val = Serial.read();
+    if (val == '1') 
+      return true;
+    else error();
+  } 
+  else return false;
+}
+
 void failure()
 {
   /*
@@ -554,12 +588,7 @@ int8_t encoderRead(char enc)
   } else if (enc == 'V')    //if Voltage Control
   {
     return Air.read();      //returns the accumlated position (new position)
-  } else
-  {
-    return;
   }
-
-
 }
 
 void initSevenSegment()

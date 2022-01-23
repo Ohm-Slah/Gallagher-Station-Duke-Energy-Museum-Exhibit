@@ -12,6 +12,7 @@
 #define SETUP_H
 
 #define WAITTIME 30000
+#define SLEEPTIME 10800000
 
 /////////////////////////////////////////////////////////////////////////
 //define all of the pins used with particular names for identification //
@@ -52,7 +53,6 @@
 #define ENCODER4BPIN 100
 ////////////////////////////////////////////////////////////////////////
 
-
 //include all libraries used //
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
@@ -79,6 +79,7 @@ byte phaseThree();
 byte phaseFour();
 
 bool serialResponse(char com[]);
+bool serialWait();
 void failure();
 byte completion();
 void sleep();

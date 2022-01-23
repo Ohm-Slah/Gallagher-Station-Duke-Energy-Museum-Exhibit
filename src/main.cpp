@@ -1,7 +1,7 @@
 /*
  * File name:         "main.ino"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         1/6/22
+ * Last edit:         1/19/22
  * Code usage:
  * This is the main Arduino file used in the creation of a museum exhibit of the Gallagher Station is New Albany, Indiana. 
  * The intended usage of this code is to simulate the responsibilities of a control station operator of a coal-fired power plant, 
@@ -18,10 +18,8 @@ void setup()
   
 }
 
-void loop() 
-{
-  if(phaseChange) if(!serialResponse("INTRO")) error();
-  
+void loop()
+{  
   switch(currentPhase)
   {
     case 0:
