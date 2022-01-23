@@ -167,7 +167,9 @@ byte phaseOne()
    *  This complicated process is to allow a more dynamic output, and to increase the difficulty of an otherwise easy task.
    * 
   */
-  int prevPos = 0;
+ 
+//Begin introduction video
+  if (!serialResponse("INTRO")) error();
 
   //Make sure everything is at an off state while the intro plays
   reset();
@@ -178,6 +180,7 @@ byte phaseOne()
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
+  uint16_t coalLine = 0;
   uint16_t bottomLine = 1000;
   float tempLine = 0;
   //optimum temp of boiler: 2150 degF
@@ -185,10 +188,19 @@ byte phaseOne()
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
 
-  /* ADD SERIAL RESPONSE WAIT UNTIL END OF INTO VID */
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN));
+
+  // Reset lastResonse to avoid resetting to phaseZero due to inactivity
+  // after watching the introduction video.
+  lastResponse = millis();
+
+  // Begin phase 1 video.
   if (!serialResponse("PHASE ONE")) error();
 
-  ledBlink(0B00000001, 1000);
+  // change state of external LEDs to phase 1 state.
+  phaseChangeLEDState(1);
 
   while (digitalRead(CONFIRMBUTTONPIN))
   {
