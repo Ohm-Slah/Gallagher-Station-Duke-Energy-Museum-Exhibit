@@ -199,7 +199,6 @@ byte phaseOne()
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
-  uint16_t coalLine = 0;
   uint16_t bottomLine = 1000;
   float tempLine = 0;
   //optimum temp of boiler: 2150 degF
@@ -209,7 +208,7 @@ byte phaseOne()
 
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN));
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) blinkUpdate();
 
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
@@ -221,9 +220,16 @@ byte phaseOne()
   // change state of external LEDs to phase 1 state.
   phaseChangeLEDState(1);
 
+  // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
-    if (phaseChange) return 1;
+    blinkUpdate();  //call frequently to update blink state of all leds
+
+    // phaseChange set in interrupt service routine @ resetPhases() 
+    // ISR called when knife-switch (reset) state is changed
+    if (phaseChange) return 1;  
+
+    // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
     coalRead = encoderRead('C');
     airRead = encoderRead('A');
@@ -510,6 +516,21 @@ void resetPhases()
 }
 
 //---------------------------------------------------------------------//
+
+void blinkUpdate()
+{
+  /*
+   *  This function must be called frequently to update thw state of all LED instances for blinking.
+  */
+  GreenLED1.blink();
+  GreenLED2.blink();
+  GreenLED3.blink();
+  GreenLED4.blink();
+  RedLED1.blink();
+  RedLED2.blink();
+  RedLED3.blink();
+  RedLED4.blink();
+}
 
 void phaseChangeLEDState(uint8_t phase)
 {
