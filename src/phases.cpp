@@ -157,9 +157,14 @@ byte phaseOne()
    *  if result is outside error margins, play failure video
    * 
    *  Conceptual diagram:
-   *  
-   *  Explanation:
-   *  
+   *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/Phase-1-Update/Pictures/phase_one_conceptual.png
+   * 
+   *  Conceptual Explanation:
+   *  The looping portion of this function takes in 2 rotary encoder positions and limits their values to a range of 0-70 (yellow).
+   *  Using Law of Sines and right angle maths, the airLine can be calculated, followed by the tempLine target value.
+   *  An instability factor is added to this final value depending on an arbitrarily set "optimal value".
+   *  This will sway the needle back and forth from the set point at a magnitude equal to the difference of the two user inputs.
+   *  This complicated process is to allow a more dynamic output, and to increase the difficulty of an otherwise easy task.
    * 
   */
   int prevPos = 0;
