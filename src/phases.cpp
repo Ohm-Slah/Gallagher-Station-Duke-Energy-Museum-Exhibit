@@ -11,8 +11,10 @@
  * 
 */
 
+//---------------------------------------------------------------------//
+
 #include "phases.h"
-// TODO rework phases 0, 1, and 2
+// TODO rework phases 1, and 2
 // TODO write phases 3 and 4
 // TODO add deep sleep mode 
 
@@ -50,6 +52,8 @@ volatile long ledCount = 0;
 // TODO object orient stepper motor code for increased readability
 const int stepsPerRevolution = 200;
 long stepperPosition;
+
+//---------------------------------------------------------------------//
 
 void initialization()
 {
@@ -122,6 +126,8 @@ void reset()
   tm.clearScreen();
   
 }
+
+//---------------------------------------------------------------------//
 
 byte phaseZero()
 {
@@ -362,6 +368,8 @@ byte phaseFour()
   return 10;
 }
 
+//---------------------------------------------------------------------//
+
 bool serialResponse(char com[])
 {
   /*
@@ -449,6 +457,8 @@ void resetPhases()
   currentPhase = 1;
 }
 
+//---------------------------------------------------------------------//
+
 void servoMove(uint16_t position)
 {
   /*
@@ -506,8 +516,6 @@ void setDCMotor(uint16_t pwmValue)
   */
   analogWrite(MOTOR_PIN, pwmValue);
 }
-
-
 
 void ledStateChange(byte State)
 {
@@ -621,7 +629,3 @@ void fail_state_audio()
   tmrpcm.play("JA.wav");
   //delay(5000);
 }
-
-//int mapValues(int x, int in_min, int in_max, int out_min, int out_max) {
-//  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-//}
