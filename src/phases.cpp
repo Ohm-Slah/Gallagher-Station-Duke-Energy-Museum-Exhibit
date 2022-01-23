@@ -176,7 +176,7 @@ byte phaseOne()
    *  if result is outside error margins, play failure video
    * 
    *  Conceptual diagram:
-   *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/Phase-1-Update/Pictures/phase_one_conceptual.png
+   *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/main/Pictures/phase_one_conceptual.png
    * 
    *  Conceptual Explanation:
    *  The looping portion of this function takes in 2 rotary encoder positions and limits their values to a range of 0-70 (yellow).
