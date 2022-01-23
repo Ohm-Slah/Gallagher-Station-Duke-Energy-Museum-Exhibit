@@ -14,7 +14,7 @@
 #define WAITTIME 30000
 #define SLEEPTIME 10800000
 
-/////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------//
 //define all of the pins used with particular names for identification //
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
@@ -45,13 +45,13 @@
 #define AUDIOPIN 46
 //50, 51, & 52 are used by the SD card reader
 #define SDCSPIN 53
-////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------//
 // TODO these pins need pin definitions
 #define ENCODER3APIN 100
 #define ENCODER3BPIN 100
 #define ENCODER4APIN 100
 #define ENCODER4BPIN 100
-////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------//
 
 //include all libraries used //
 #include <Arduino.h>
@@ -61,14 +61,13 @@
 #include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
 #include <SPI.h>
 #include "TimedBlink.h"
-///////////////////////////////////////////////////////////////////////
-
+//---------------------------------------------------------------------//
 
 // instantiate important global variables //
 extern volatile byte currentPhase;
 extern volatile bool phaseChange;
 extern volatile long long lastResponse;
-///////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------//
 
 // instantiate all functions used in program //
 void initialization();
@@ -100,4 +99,4 @@ void fail_state_audio();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 
 #endif
-//////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------//

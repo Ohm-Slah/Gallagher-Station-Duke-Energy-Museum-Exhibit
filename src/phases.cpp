@@ -11,8 +11,10 @@
  * 
 */
 
+//---------------------------------------------------------------------//
+
 #include "phases.h"
-// TODO rework phases 0, 1, and 2
+// TODO rework phases 1, and 2
 // TODO write phases 3 and 4
 
 // TODO object orient phone code for greater readability
@@ -52,6 +54,8 @@ TimedBlink RedLED4(P4RLED);
 // TODO object orient stepper motor code for increased readability
 const int stepsPerRevolution = 200;
 long stepperPosition;
+
+//---------------------------------------------------------------------//
 
 void initialization()
 {
@@ -140,6 +144,8 @@ void deepSleep()
   if (!serialResponse("SLEEP")) error();
   while (!phaseChange);
 }
+
+//---------------------------------------------------------------------//
 
 byte phaseZero()
 {
@@ -390,6 +396,8 @@ byte phaseFour()
   return 10;
 }
 
+//---------------------------------------------------------------------//
+
 bool serialResponse(char com[])
 {
   /*
@@ -489,6 +497,8 @@ void resetPhases()
   phaseChange = true;
   currentPhase = 1;
 }
+
+//---------------------------------------------------------------------//
 
 void phaseChangeLEDState(uint8_t phase)
 {
@@ -659,7 +669,3 @@ void fail_state_audio()
   tmrpcm.play("JA.wav");
   //delay(5000);
 }
-
-//int mapValues(int x, int in_min, int in_max, int out_min, int out_max) {
-//  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-//}
