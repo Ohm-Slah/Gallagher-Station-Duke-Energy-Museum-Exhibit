@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/17/22
+ * Last edit:         1/23/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------//
 
 #include "phases.h"
-// TODO rework phases 1, and 2
+// TODO rework phases 2
 // TODO write phases 3 and 4
 // TODO add deep sleep mode 
 
@@ -132,10 +132,10 @@ void reset()
 byte phaseZero()
 {
   /*
-     This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
-     and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
-     When exiting the sleep state, reseting function is needed.
-     This currently does nothing.
+   *  This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
+   *  and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
+   *  When exiting the sleep state, reseting function is needed.
+   *  This currently does nothing.
   */
 
   if (!serialResponse("PHASE ZERO")) error();
@@ -147,18 +147,22 @@ byte phaseZero()
 byte phaseOne()
 {
   /*
-     This function is the first phase of the display.
-     Steps:
-     play intro vid
-     play phase 1 instruction vid
-     balance air and coal encoders until temp servo gauge is at specified position,
-     simultaneously waiting for confirm button to be pressed
-     if result on servo gauge is within eror margins, continue onto next phase.
-     if result is outside error margins, play fail video
+   *  This function is the first phase of the display.
+   *  Steps:
+   *  play intro vid
+   *  play phase 1 instruction vid
+   *  balance air and coal encoders until temp servo gauge is at specified position,
+   *  simultaneously waiting for confirm button to be pressed
+   *  if result on servo gauge is within error margins, continue onto next phase.
+   *  if result is outside error margins, play failure video
+   * 
+   *  Conceptual diagram:
+   *  
+   *  Explanation:
+   *  
+   * 
   */
   int prevPos = 0;
-  //tmrpcm.loop(1);
-  //fail_state_audio();
 
   //Make sure everything is at an off state while the intro plays
   reset();
@@ -169,7 +173,6 @@ byte phaseOne()
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
-  uint16_t coalLine = 0;
   uint16_t bottomLine = 1000;
   float tempLine = 0;
   //optimum temp of boiler: 2150 degF
