@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/19/22
+ * Last edit:         1/23/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------//
 
 #include "phases.h"
-// TODO rework phases 1, and 2
+// TODO rework phases 2
 // TODO write phases 3 and 4
 
 // TODO object orient phone code for greater readability
@@ -150,10 +150,10 @@ void deepSleep()
 byte phaseZero()
 {
   /*
-     This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
-     and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
-     When exiting the sleep state, reseting function is needed.
-     This currently does nothing.
+   *  This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
+   *  and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
+   *  When exiting the sleep state, reseting function is needed.
+   *  This currently does nothing.
   */
   if (!serialResponse("PHASE ZERO")) error();
   while (!phaseChange) if (lastResponse + SLEEPTIME < millis()) deepSleep();
@@ -166,16 +166,27 @@ byte phaseZero()
 byte phaseOne()
 {
   /*
-     This function is the first phase of the display.
-     Steps:
-     play intro vid
-     play phase 1 instruction vid
-     balance air and coal encoders until temp servo gauge is at specified position,
-     simultaneously waiting for confirm button to be pressed
-     if result on servo gauge is within eror margins, continue onto next phase.
-     if result is outside error margins, play fail video
+   *  This function is the first phase of the display.
+   *  Steps:
+   *  play intro vid
+   *  play phase 1 instruction vid
+   *  balance air and coal encoders until temp servo gauge is at specified position,
+   *  simultaneously waiting for confirm button to be pressed
+   *  if result on servo gauge is within error margins, continue onto next phase.
+   *  if result is outside error margins, play failure video
+   * 
+   *  Conceptual diagram:
+   *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/Phase-1-Update/Pictures/phase_one_conceptual.png
+   * 
+   *  Conceptual Explanation:
+   *  The looping portion of this function takes in 2 rotary encoder positions and limits their values to a range of 0-70 (yellow).
+   *  Using Law of Sines and right angle maths, the airLine can be calculated, followed by the tempLine target value.
+   *  An instability factor is added to this final value depending on an arbitrarily set "optimal value".
+   *  This will sway the needle back and forth from the set point at a magnitude equal to the difference of the two user inputs.
+   *  This complicated process is to allow a more dynamic output, and to increase the difficulty of an otherwise easy task.
+   * 
   */
-  
+
   //Begin introduction video
   if (!serialResponse("INTRO")) error();
 
