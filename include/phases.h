@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/17/22
+ * Last edit:         1/23/22
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -85,6 +85,7 @@ void sleep();
 void error();
 void reset();
 
+void blinkUpdate();
 void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
 void stepperTick();

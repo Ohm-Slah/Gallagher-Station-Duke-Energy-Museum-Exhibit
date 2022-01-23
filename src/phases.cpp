@@ -187,22 +187,23 @@ byte phaseOne()
    * 
   */
 
-  //Begin introduction video
+  // Begin introduction video
   if (!serialResponse("INTRO")) error();
 
-  //Make sure everything is at an off state while the intro plays
+  // Make sure everything is at an off state while the intro plays
   reset();
 
-  //initialize temporary variables
+  // initialize variables for finding tempLine
   int8_t coalRead = 0;
   int8_t airRead = 0;
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
-  uint16_t bottomLine = 1000;
+  uint16_t bottomLine = 1000; //arbitrary
   float tempLine = 0;
-  //optimum temp of boiler: 2150 degF
+  // optimum temp of boiler: 2150 degF
 
+  // variables used for instability factor, or 'sway'
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
 
@@ -231,32 +232,37 @@ byte phaseOne()
 
     // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
-    coalRead = encoderRead('C');
-    airRead = encoderRead('A');
 
+    // read encoder positional values. Encoder position accrues automatically with interrupts
+    coalRead = encoderRead('C');  //'C' = coal
+    airRead = encoderRead('A');   //'A' = air
+
+    // restricts 'sway' of output for instability factor to difference of inputs
     if (count > abs(airAngle - coalAngle) * 50) dir = !dir;
 
+    // applies instability factor ot base line, 1000 is arbitrarily chosen
     bottomLine = 1000 - count;
 
+    // increment/decrement instability factor according to direction of sway
     if (dir)
       count++;
     else
       count--;
 
+    // This block limits coalRead (rotary encoder) to a range of 0-70 //
     if (coalRead)
     {
       lastResponse = millis();
       coalAngle += coalRead;
       Coal.write(0);
       if (coalAngle > 70)
-      {
         coalAngle = 70;
-      }
       else if (coalAngle < 0)
-      {
         coalAngle = 0;
-      }
     }
+    //----------------------------------------------------------------//
+
+    // This block limits airRead (rotary encoder) to a range of 0-70 //
     if (airRead)
     {
       lastResponse = millis();
@@ -267,18 +273,26 @@ byte phaseOne()
       else if (airAngle < 0)
         airAngle = 0;
     }
+    //---------------------------------------------------------------//
 
-    //apply law of sines as well as right triangle maths to solve for temp
+    // apply law of sines as well as right triangle maths to solve for tempLine //
     airLine = ((float)bottomLine * sin((float)coalAngle * PI / 180)) / sin(((float)180 - coalAngle - airAngle) * PI / 180);
     tempLine = sin((float)airAngle * PI / 180) * airLine;
+    //--------------------------------------------------------------------------//
+
+    //map tempLine to corespnding value on gauge. Servo range is 0-255
     servoMove(map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
   }
- Serial.println(tempLine);
+
+  
+  //Serial.println(tempLine); // uncomment for debugging
+
+  // if tempLine was within arbitrary error margins, move on to phaseTwo().
+  // otherwise, move to failure()
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
-    //Serial.println("SUCCESS");
-    digitalWrite(P1GLED, LOW);
+    digitalWrite(P1GLED, LOW);  // TODO what is this
     servoMove(79);
     return 2;
   } else {
