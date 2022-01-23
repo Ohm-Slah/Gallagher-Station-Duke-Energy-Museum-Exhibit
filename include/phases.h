@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/6/22
+ * Last edit:         1/17/22
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -12,6 +12,7 @@
 #define SETUP_H
 
 #define WAITTIME 30000
+#define SLEEPTIME 10800000
 
 //---------------------------------------------------------------------//
 //define all of the pins used with particular names for identification //
@@ -52,16 +53,15 @@
 #define ENCODER4BPIN 100
 //---------------------------------------------------------------------//
 
-
 //include all libraries used //
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
 #include <SD.h>
-#include <TMRpcm.h>   //https://www.arduino.cc/reference/en/libraries/tmrpcm/
+#include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
 #include <SPI.h>
+#include "TimedBlink.h"
 //---------------------------------------------------------------------//
-
 
 // instantiate important global variables //
 extern volatile byte currentPhase;
@@ -78,14 +78,14 @@ byte phaseThree();
 byte phaseFour();
 
 bool serialResponse(char com[]);
-void ledBlink(byte LED, int Time);
-void ledStateChange(byte State);
+bool serialWait();
 void failure();
 byte completion();
 void sleep();
 void error();
 void reset();
 
+void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
 void stepperTick();
 void homeStepper();
