@@ -12,7 +12,7 @@
 */
 
 #include "phases.h"
-// TODO write phases 3 and 4
+// TODO write phase 4
 
 // TODO object orient phone code for greater readability
 
@@ -81,7 +81,8 @@ void initialization()
   pinMode(STEAMLEDPIN, OUTPUT);
   pinMode(LED_ON_BOARD, OUTPUT); //LED pin on Arduino Mega
   pinMode(MOTOR_PIN, OUTPUT);
-  pinMode(SERVOPIN, OUTPUT);
+  pinMode(TEMPERATURESERVOPIN, OUTPUT);
+  pinMode(VOLTAGESERVOPIN, OUTPUT);
   pinMode(RESETSWITCHPIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(RESETSWITCHPIN), resetPhases, FALLING);
   pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);
@@ -285,8 +286,9 @@ byte phaseOne()
     airLine = ((float)bottomLine * sin((float)coalAngle * PI / 180)) / sin(((float)180 - coalAngle - airAngle) * PI / 180);
     tempLine = sin((float)airAngle * PI / 180) * airLine;
 
-    //map tempLine to corespnding value on gauge. Servo range is 0-255
-    servoMove(map((int)tempLine, 0, 1374, 255, 0));
+    // map tempLine to coresponding value on temperature gauge. Servo range is 0-255.
+    // the value 1374 was found through trial and error.
+    analogWrite(TEMPERATURESERVOPIN, map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
   }
 
@@ -297,7 +299,8 @@ byte phaseOne()
   // otherwise, move to failure()
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
-    servoMove(79);
+    // move gauge servo to optimal value, found through trial and error
+    analogWrite(TEMPERATURESERVOPIN, 79);
     return 2;
   } else {
     failure();
@@ -323,9 +326,10 @@ byte phaseTwo()
    * the process moves onto phase 3. Otherwise, failure code is called and phase 2 is repeated.
   */
 
+  // begin phase 2 video.
   if (!serialResponse("PHASE TWO")) error();
   
-  // reset voltage encoder simulated position
+  // reset govenor encoder simulated position
   Govenor.write(0);
   tm.colonOff();
 
@@ -344,7 +348,7 @@ byte phaseTwo()
     // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
 
-    // update phase 1 led blinking states
+    // update led blinking states
     updateLEDS();
     
     // This block limits steamRead (rotary encoder) and dc motor PWM to a range of 23-75 //
@@ -355,29 +359,27 @@ byte phaseTwo()
       lastResponse = millis();
       steam += steamRead;
       Govenor.write(0);
+
       if (steam > 75)
-      {
         steam = 75;
-      }
       else if (steam < 23)
-      {
         steam = 23;
-      }
+
       tm.clearScreen();
       setDCMotor(steam);
-      tm.display(map(steam, 23, 75, 30, 66), true, false, 0);
+      // TODO 7-segment code
       
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
-    // read encoder positional values. Encoder position accrues automatically with interrupts.
+    // read encoder positional value. Encoder position accrues automatically with interrupts.
     steamRead = encoderRead('G');
   }
 
   //Serial.println(steam);  //uncomment this line for serial debugging
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
-  // otherwise run failure code and 
+  // otherwise run failure code and repeat phase 2
   if (abs(steam - 67) < 3)
   {
     setDCMotor(64);
@@ -392,54 +394,70 @@ byte phaseThree()
 {
   /*
    * This function is the third phase of the display.
-   * It is currently is in use for a demonstration.
+   * 
+   * 
   */
   if (!serialResponse("PHASE THREE")) error();
-  phaseChangeLEDState(3);
-  delay(1000);
-  Coal.write(0);
-  int16_t steamRead = 0;
-  int16_t steam = 0;
-  int16_t steamPrev = 0;
 
+  // reset voltage encoder simulated position
+  Voltage.write(0);
+
+  // initialize temporary variables
+  int16_t voltageRead = 0;
+  int16_t voltage = 0;
+
+  // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
+    // phaseChange set in interrupt service routine @ resetPhases() 
+    // ISR called when knife-switch (reset) state is changed
     if (phaseChange) return 1;
+
+    // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
-    steamRead = encoderRead('C');
+
+    // read encoder positional value. Encoder position accrues automatically with interrupts.
+    voltageRead = encoderRead('V');
+
+    // update led blinking states
     updateLEDS();
 
-    if (steamRead)
+    // This block limits voltageRead (rotary encoder) and dc motor PWM to a range of 0-255 //
+    // This is the range of values that can be shown on frahm tachometer                   //
+    //----------------------------------Start of Block-------------------------------------//
+    if (voltageRead)
     {
       lastResponse = millis();
-      steam += steamRead;
-      Coal.write(0);
-      if (steam > steamPrev)
-      {
-        digitalWrite(DIRPIN, LOW);
-        for (int i = steamPrev; i < steam; i++)
-        {
-          stepperTick();
-          delay(5);
-        }
-        steamPrev = steam;
-      } else if (steam < steamPrev)
-      {
-        digitalWrite(DIRPIN, HIGH);
-        for (int i = steamPrev; i > steam; i--)
-        {
-          stepperTick();
-          delay(5);
-        }
-        steamPrev = steam;
-      }
+      voltage += voltageRead;
+      Voltage.write(0);
+
+      if (voltage > 255)
+        voltage = 255;
+      else if (voltage < 0)
+        voltage = 0;
+
+      // TODO 7 segment code
+
+      // ! This line currently inverts the value of voltage and
+      // ! and moves the servo to that position, range of 0-255.
+      // ! The actual postions must be found through trial and error.
+      analogWrite(VOLTAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
     }
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
   }
 
-  digitalWrite(ENPIN, HIGH);
-  digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
-  return 10; //temporarily skip phase four
+  // ! This code below must be tested to find actual error margins //
+  // !-------------------------Start of Block----------------------//
+  if (abs(voltage - 0) < 1)  
+  {
+    return 4; // begin phase 4
+  } else 
+  {
+    failure();
+    return 3; // begin phase 3, again
+  }
+  // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 }
 
 byte phaseFour()
@@ -675,14 +693,6 @@ void phaseChangeLEDState(uint8_t phase)
       STEAMLED.blinkOff();
     }
   }
-}
-
-void servoMove(uint16_t position)
-{
-  /*
-   * This function recieves a position value and moves the servo to that position. 0-255
-  */
-  analogWrite(SERVOPIN, position);
 }
 
 int8_t encoderRead(char enc)

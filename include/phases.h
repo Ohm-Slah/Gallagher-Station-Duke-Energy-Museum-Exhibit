@@ -18,13 +18,14 @@
 
 //define all of the pins used with particular names for identification //
 //------------------------Start of Block-------------------------------//
+// 0 & 1 are NC
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
 #define SEGCLKPIN 4
 #define SEGDIOPIN 5
 #define CONFIRMBUTTONLEDPIN 6
 #define SENDPOWERBUTTONLEDPIN 7
-#define SERVOPIN 8
+#define TEMPERATURESERVOPIN 8
 #define MAINSWITCHLEDPIN 9
 #define MOTOR_PIN 10
 // 11 & 12 are NC
@@ -52,10 +53,11 @@
 #define ENCODER3BPIN 37
 #define ENCODER4APIN 38
 #define ENCODER4BPIN 39
-// 40-45 are NC
+#define VOLTAGESERVOPIN 41
+// 41-45 are NC
 #define AUDIOPIN 46
 // 47-49 are NC
-// 50, 51, & 52 are used by the SD card reader
+// 50, 51, & 52 are used by the SD card reader library "SD.h"
 #define SDCSPIN 53
 //^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
