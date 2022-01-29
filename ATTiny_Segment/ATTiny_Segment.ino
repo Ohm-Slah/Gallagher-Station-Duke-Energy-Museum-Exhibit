@@ -1,4 +1,4 @@
-#define F_CPU 1000000UL
+#define F_CPU 8000000UL
 
 //#define NONE {1,1,1,1,1,1,1,1}
 //#define ZERO {0,0,0,0,0,0,1,1}
@@ -40,6 +40,13 @@
 #define SegG 15
 #define DP   16
 
+union ArrayToInteger {
+  byte array[8];
+  uint32_t integer;
+};
+
+uint16_t valueToDisplay = 0;
+
 byte presets[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE};
 
 const byte scan[6] = {D1, D2, D3, D4, D5, D6};
@@ -60,6 +67,7 @@ const byte segments[8] = {SegA, SegB, SegC, SegD, SegE, SegF, SegG, DP};
 byte data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
 
 void setup() {
+  Serial.begin(9600);
   for(int i=2; i<8; i++)
   {
     pinMode(i, OUTPUT);
@@ -94,17 +102,43 @@ void scanAnodes(uint16_t del)
 
 void displayData(uint16_t del)
 {
-  int count = millis();
+  long int count = millis();
   while(count+1000>millis()) scanAnodes(1);
 }
 
 void loop() {
-  while(1)
+  
+//  for(int i=0; i<11; i++)
+//  {
+//    Serial.println("E");
+//    for(int j=0; j<6; j++) data[j] = presets[(i+j)%11];
+//    displayData(1000);
+//  }
+  if(getSerial())
   {
-    for(int i=0; i<11; i++)
-    {
-      for(int j=0; j<6; j++) data[j] = presets[(i+j)%11];
-      displayData(1000);
-    }
+    uint8_t buff[8] = {0,0,0,0,0,0,0,0};
+    itoa(valueToDisplay, buff, 10);
+    for(int j=0; j<6; j++) data[j] = presets[buff[j]];
+    displayData(500);
   }
+}
+
+bool getSerial()
+{
+  int i = 0;
+  byte buff[8];
+  
+  while(Serial.available())
+  {
+    buff[i] = Serial.read();
+    
+    if(buff[i]==13 || buff[i]==10 || i>=8)
+    {
+      valueToDisplay = atoi(buff);
+      Serial.flush();
+      return true;
+    }
+    i++;
+  }
+  return false;
 }
