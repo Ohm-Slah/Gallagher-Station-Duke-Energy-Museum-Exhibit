@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------//
 
 #include "phases.h"
-// TODO rework phases 1, and 2
+// TODO rework phases 2
 // TODO write phases 3 and 4
 
 // TODO object orient phone code for greater readability
@@ -151,10 +151,10 @@ void deepSleep()
 byte phaseZero()
 {
   /*
-     This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
-     and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
-     When exiting the sleep state, reseting function is needed.
-     This currently does nothing.
+   *  This fuction is the 'awaiting user input' phase. This will run for a maximum of X hours,
+   *  and will then enter a sleep state. The only difference in the sleep state is what the raspberry pi displays.
+   *  When exiting the sleep state, reseting function is needed.
+   *  This currently does nothing.
   */
   if (!serialResponse("PHASE ZERO")) error();
   while (!phaseChange) 
@@ -166,7 +166,6 @@ byte phaseZero()
     }
   }
   return 1;
-
 }
 
 // TODO add update blink virtually everywhere you can
@@ -174,33 +173,44 @@ byte phaseZero()
 byte phaseOne()
 {
   /*
-     This function is the first phase of the display.
-     Steps:
-     play intro vid
-     play phase 1 instruction vid
-     balance air and coal encoders until temp servo gauge is at specified position,
-     simultaneously waiting for confirm button to be pressed
-     if result on servo gauge is within eror margins, continue onto next phase.
-     if result is outside error margins, play fail video
+   *  This function is the first phase of the display.
+   *  Steps:
+   *  play intro vid
+   *  play phase 1 instruction vid
+   *  balance air and coal encoders until temp servo gauge is at specified position,
+   *  simultaneously waiting for confirm button to be pressed
+   *  if result on servo gauge is within error margins, continue onto next phase.
+   *  if result is outside error margins, play failure video
+   * 
+   *  Conceptual diagram:
+   *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/main/Pictures/phase_one_conceptual.png
+   * 
+   *  Conceptual Explanation:
+   *  The looping portion of this function takes in 2 rotary encoder positions and limits their values to a range of 0-70 (yellow).
+   *  Using Law of Sines and right angle maths, the airLine can be calculated, followed by the tempLine target value.
+   *  An instability factor is added to this final value depending on an arbitrarily set "optimal value".
+   *  This will sway the needle back and forth from the set point at a magnitude equal to the difference of the two user inputs.
+   *  This complicated process is to allow a more dynamic output, and to increase the difficulty of an otherwise easy task.
+   * 
   */
-  
-  //Begin introduction video
+
+  // Begin introduction video
   if (!serialResponse("INTRO")) error();
 
-  //Make sure everything is at an off state while the intro plays
+  // Make sure everything is at an off state while the intro plays
   reset();
 
-  //initialize temporary variables
+  // initialize variables for finding tempLine
   int8_t coalRead = 0;
   int8_t airRead = 0;
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
-  uint16_t coalLine = 0;
-  uint16_t bottomLine = 1000;
+  uint16_t bottomLine = 1000; //arbitrary
   float tempLine = 0;
-  //optimum temp of boiler: 2150 degF
+  // optimum temp of boiler: 2150 degF
 
+  // variables used for instability factor, or 'sway'
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
 
@@ -211,41 +221,53 @@ byte phaseOne()
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
   lastResponse = millis();
-
+  
   // Begin phase 1 video.
   if (!serialResponse("PHASE ONE")) error();
 
+  // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
-    if (phaseChange) return 1;
+    blinkUpdate();  //call frequently to update blink state of all leds
+
+    // phaseChange set in interrupt service routine @ resetPhases() 
+    // ISR called when knife-switch (reset) state is changed
+    if (phaseChange) return 1;  
+
+    // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
-    coalRead = encoderRead('C');
-    airRead = encoderRead('A');
     updateLEDS();
 
+    // read encoder positional values. Encoder position accrues automatically with interrupts
+    coalRead = encoderRead('C');  //'C' = coal
+    airRead = encoderRead('A');   //'A' = air
+
+    // restricts 'sway' of output for instability factor to difference of inputs
     if (count > abs(airAngle - coalAngle) * 50) dir = !dir;
 
+    // applies instability factor ot base line, 1000 is arbitrarily chosen
     bottomLine = 1000 - count;
 
+    // increment/decrement instability factor according to direction of sway
     if (dir)
       count++;
     else
       count--;
 
+    // This block limits coalRead (rotary encoder) to a range of 0-70 //
     if (coalRead)
     {
       lastResponse = millis();
       coalAngle += coalRead;
       Coal.write(0);
       if (coalAngle > 70)
-      {
         coalAngle = 70;
-      }
       else if (coalAngle < 0)
-      {
         coalAngle = 0;
-      }
     }
+    //----------------------------------------------------------------//
+
+    // This block limits airRead (rotary encoder) to a range of 0-70 //
     if (airRead)
     {
       lastResponse = millis();
@@ -256,17 +278,25 @@ byte phaseOne()
       else if (airAngle < 0)
         airAngle = 0;
     }
+    //---------------------------------------------------------------//
 
-    //apply law of sines as well as right triangle maths to solve for temp
+    // apply law of sines as well as right triangle maths to solve for tempLine //
     airLine = ((float)bottomLine * sin((float)coalAngle * PI / 180)) / sin(((float)180 - coalAngle - airAngle) * PI / 180);
     tempLine = sin((float)airAngle * PI / 180) * airLine;
+    //--------------------------------------------------------------------------//
+
+    //map tempLine to corespnding value on gauge. Servo range is 0-255
     servoMove(map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
   }
- Serial.println(tempLine);
+
+  
+  //Serial.println(tempLine); // uncomment for debugging
+
+  // if tempLine was within arbitrary error margins, move on to phaseTwo().
+  // otherwise, move to failure()
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
-    //Serial.println("SUCCESS");
     servoMove(79);
     return 2;
   } else {
@@ -442,6 +472,7 @@ bool serialWait()
   /*
    * This function will return true if there was anything waiting in the USB serial buffer
   */
+
   if(Serial.available())
   {
     char val = Serial.read();
