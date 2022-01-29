@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/19/22
+ * Last edit:         1/29/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -35,20 +35,23 @@ Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
 
 // Library instantiation for 7-segment display
 //TODO Write new 7-seg implementation code
-TM1637 tm(SEGCLK, SEGDIO);  
+TM1637 tm(SEGCLKPIN, SEGDIOPIN);  
 
 // Create SD Card audio instance
 TMRpcm tmrpcm; 
 
-// Create LED instances that can be modified individually with minimal interaction
-TimedBlink GreenLED1(P1GLED);
-TimedBlink GreenLED2(P2GLED);
-TimedBlink GreenLED3(P3GLED);
-TimedBlink GreenLED4(P4GLED);
-TimedBlink RedLED1(P1RLED);
-TimedBlink RedLED2(P2RLED);
-TimedBlink RedLED3(P3RLED);
-TimedBlink RedLED4(P4RLED);
+// Create LED blinking instances tied to their pinout that can be modified individually with minimal interaction
+TimedBlink RedLED1(P1LEDPIN);
+TimedBlink RedLED2(P2LEDPIN);
+TimedBlink RedLED3(P3LEDPIN);
+TimedBlink RedLED4(P4LEDPIN);
+TimedBlink CONFIRMBUTTONLED(CONFIRMBUTTONLEDPIN);
+TimedBlink SENDPOWERBUTTONLED(SENDPOWERBUTTONLEDPIN);
+TimedBlink MAINSWITCHLED(MAINSWITCHLEDPIN);
+TimedBlink COALLED(COALLEDPIN);
+TimedBlink AIRLED(AIRLEDPIN);
+TimedBlink VOLTAGELED(VOLTAGELEDPIN);
+TimedBlink STEAMLED(STEAMLEDPIN);
 
 // variables for the stepper motor
 // TODO object orient stepper motor code for increased readability
@@ -63,20 +66,22 @@ void initialization()
    * This fuction is run once on startup.
    * This is to simply initialize everything needed.
   */
-  pinMode(PHONESWITCHPIN, INPUT_PULLUP); //Phone Switch
-  pinMode(LIGHTBULBSWITCHPIN, OUTPUT); //Light bulb
-  //pinMode(31, INPUT); //Send Power button
-  pinMode(P1RLED, OUTPUT); //Phase 1 Red LED
-  pinMode(P1GLED, OUTPUT); //Phase 1 Green LED
-  pinMode(P2RLED, OUTPUT); //Phase 2 Red LED
-  pinMode(P2GLED, OUTPUT); //Phase 2 Green LED
-  pinMode(P3RLED, OUTPUT); //Phase 3 Red LED
-  pinMode(P3GLED, OUTPUT); //Phase 3 Green LED
-  pinMode(P4RLED, OUTPUT); //Phase 4 Red LED
-  pinMode(P4GLED, OUTPUT); //Phase 4 Green LED
-  pinMode(LED_ON_BOARD, OUTPUT); //LED pin of Arduino Mega
-  pinMode(MOTOR_PIN, OUTPUT); //DC Motor Pin
-  pinMode(SERVOPIN, OUTPUT); //Servo motor Pin
+  pinMode(PHONESWITCHPIN, INPUT_PULLUP);
+  pinMode(LIGHTBULBSWITCHPIN, OUTPUT);
+  pinMode(P1LEDPIN, OUTPUT); //Phase 1 LED
+  pinMode(P2LEDPIN, OUTPUT); //Phase 2 LED
+  pinMode(P3LEDPIN, OUTPUT); //Phase 3 LED
+  pinMode(P4LEDPIN, OUTPUT); //Phase 4 LED
+  pinMode(CONFIRMBUTTONLEDPIN, OUTPUT);
+  pinMode(SENDPOWERBUTTONLEDPIN, OUTPUT);
+  pinMode(MAINSWITCHLEDPIN, OUTPUT);
+  pinMode(COALLEDPIN, OUTPUT);
+  pinMode(AIRLEDPIN, OUTPUT);
+  pinMode(VOLTAGELEDPIN, OUTPUT);
+  pinMode(STEAMLEDPIN, OUTPUT);
+  pinMode(LED_ON_BOARD, OUTPUT); //LED pin on Arduino Mega
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(SERVOPIN, OUTPUT);
   pinMode(RESETSWITCHPIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(RESETSWITCHPIN), resetPhases, FALLING);
   pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);
@@ -119,10 +124,6 @@ void reset()
   RedLED2.blinkOff();
   RedLED3.blinkOff();
   RedLED4.blinkOff();
-  GreenLED1.blinkOff();
-  GreenLED2.blinkOff();
-  GreenLED3.blinkOff();
-  GreenLED4.blinkOff();
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   //servoMove((int)10);
@@ -139,10 +140,10 @@ void deepSleep()
       This function is called after a great length of time has passed
       with no interaction with the controls. Ideally, this would only
       be called if the display was kept on after closing time at the 
-      mueseum. This is simply an attempt to save on power consumption.
+      meuseum. This is simply an attempt to save on power consumption.
   */
   if (!serialResponse("SLEEP")) error();
-  while (!phaseChange);
+  while (!phaseChange) updateLEDS();
 }
 
 //---------------------------------------------------------------------//
@@ -156,7 +157,14 @@ byte phaseZero()
      This currently does nothing.
   */
   if (!serialResponse("PHASE ZERO")) error();
-  while (!phaseChange) if (lastResponse + SLEEPTIME < millis()) deepSleep();
+  while (!phaseChange) 
+  {
+    updateLEDS();
+    if (lastResponse + SLEEPTIME < millis()) 
+    {
+      deepSleep();
+    }
+  }
   return 1;
 
 }
@@ -198,7 +206,7 @@ byte phaseOne()
 
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN));
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
 
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
@@ -207,15 +215,13 @@ byte phaseOne()
   // Begin phase 1 video.
   if (!serialResponse("PHASE ONE")) error();
 
-  // change state of external LEDs to phase 1 state.
-  phaseChangeLEDState(1);
-
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
     if (lastResponse + WAITTIME < millis()) return 0;
     coalRead = encoderRead('C');
     airRead = encoderRead('A');
+    updateLEDS();
 
     if (count > abs(airAngle - coalAngle) * 50) dir = !dir;
 
@@ -261,7 +267,6 @@ byte phaseOne()
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
     //Serial.println("SUCCESS");
-    digitalWrite(P1GLED, LOW);
     servoMove(79);
     return 2;
   } else {
@@ -290,6 +295,7 @@ byte phaseTwo()
   {
     if (phaseChange) return 1;
     if (lastResponse + WAITTIME < millis()) return 0;
+    updateLEDS();
     
     if (steamRead)
     {
@@ -317,7 +323,6 @@ byte phaseTwo()
   if (abs(steam - 67) < 3)
   {
     //Serial.println("SUCCESS");
-    digitalWrite(P2GLED, LOW);
     setDCMotor(64);
     return 3;
   } else {
@@ -347,6 +352,8 @@ byte phaseThree()
     if (phaseChange) return 1;
     if (lastResponse + WAITTIME < millis()) return 0;
     steamRead = encoderRead('C');
+    updateLEDS();
+
     if (steamRead)
     {
       lastResponse = millis();
@@ -374,8 +381,7 @@ byte phaseThree()
     }
 
   }
-  digitalWrite(P3GLED, LOW);
-  digitalWrite(P4GLED, LOW);
+
   digitalWrite(ENPIN, HIGH);
   digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
   return 10; //temporarily skip phase four
@@ -392,6 +398,7 @@ byte phaseFour()
   while (digitalRead(CONFIRMBUTTONPIN))
   {
     if (phaseChange) return 1;
+    updateLEDS();
   }
   return 10;
 }
@@ -409,6 +416,7 @@ bool serialResponse(char com[])
   delay(1000);
   while (attempts <= 5)
   {
+    updateLEDS();
     Serial.println(com);
     if (Serial.available())
     {
@@ -431,6 +439,9 @@ bool serialResponse(char com[])
 
 bool serialWait()
 {
+  /*
+   * This function will return true if there was anything waiting in the USB serial buffer
+  */
   if(Serial.available())
   {
     char val = Serial.read();
@@ -449,6 +460,7 @@ void failure()
   delay(1000);
   if (!serialResponse("RING")) error();
   while (!digitalRead(PHONESWITCHPIN)) {
+    updateLEDS();
     if (phaseChange) return;
   }
   if (!serialResponse("FAILURE")) error();
@@ -458,6 +470,7 @@ void failure()
   tmrpcm.disable();
 
   while (digitalRead(PHONESWITCHPIN)) {
+    updateLEDS();
     if (phaseChange) return;
   }
 }
@@ -500,78 +513,114 @@ void resetPhases()
 
 //---------------------------------------------------------------------//
 
+void updateLEDS()
+{
+  /*
+   *  This function must be called frequently to update the slow blinking state of all LED's.
+  */
+  RedLED1.blink();
+  RedLED2.blink();
+  RedLED3.blink();
+  RedLED4.blink();
+  CONFIRMBUTTONLED.blink();
+  SENDPOWERBUTTONLED.blink();
+  MAINSWITCHLED.blink();
+  COALLED.blink();
+  AIRLED.blink();
+  VOLTAGELED.blink();
+  STEAMLED.blink();
+}
+
 void phaseChangeLEDState(uint8_t phase)
 {
   /*
-   *  This function changes the state of all of the led's according to what phase number is sent to it.
+   *  This function changes the blinking state of all of the led's according to what phase number is sent to it.
   */
   switch (phase)
   {
     case 0:
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
       RedLED1.blinkOff();
       RedLED2.blinkOff();
       RedLED3.blinkOff();
       RedLED4.blinkOff();
+      CONFIRMBUTTONLED.blinkOff();
+      SENDPOWERBUTTONLED.blinkOff();
+      MAINSWITCHLED.blink(500, 500);
+      COALLED.blinkOff();
+      AIRLED.blinkOff();
+      VOLTAGELED.blinkOff();
+      STEAMLED.blinkOff();
     }
     case 1:
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
       RedLED1.blink(500, 500);
       RedLED2.blinkOff();
       RedLED3.blinkOff();
       RedLED4.blinkOff();
+      CONFIRMBUTTONLED.blink(250, 250);
+      SENDPOWERBUTTONLED.blinkOff();
+      MAINSWITCHLED.blink(500, 500);
+      COALLED.blink(250, 250);
+      AIRLED.blink(250, 250);
+      VOLTAGELED.blinkOff();
+      STEAMLED.blinkOff();
     }
     case 2:
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
-      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED1.blinkOff(); 
       RedLED2.blink(500, 500);
       RedLED3.blinkOff();
       RedLED4.blinkOff();
+      CONFIRMBUTTONLED.blink(250, 250);
+      SENDPOWERBUTTONLED.blinkOff();
+      MAINSWITCHLED.blink(500, 500);
+      COALLED.blinkOff();
+      AIRLED.blinkOff();
+      VOLTAGELED.blinkOff();
+      STEAMLED.blink(250, 250);
     }
     case 3:
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
-      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED1.blinkOff(); 
+      RedLED2.blinkOff(); 
       RedLED3.blink(500, 500);
       RedLED4.blinkOff();
+      CONFIRMBUTTONLED.blink(250, 250);
+      SENDPOWERBUTTONLED.blinkOff();
+      MAINSWITCHLED.blink(500, 500);
+      COALLED.blinkOff();
+      AIRLED.blinkOff();
+      VOLTAGELED.blink(250, 250);
+      STEAMLED.blinkOff();
     }
     case 4:
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
-      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED3.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED1.blinkOff(); 
+      RedLED2.blinkOff();
+      RedLED3.blinkOff(); 
       RedLED4.blink(500,500);
+      CONFIRMBUTTONLED.blinkOff();
+      SENDPOWERBUTTONLED.blink(150, 150);
+      MAINSWITCHLED.blink(500, 500);
+      COALLED.blinkOff();
+      AIRLED.blinkOff();
+      VOLTAGELED.blinkOff();
+      STEAMLED.blinkOff();
     }
     case 10:  //phase 'complete'
     {
-      GreenLED1.blinkOff();
-      GreenLED2.blinkOff();
-      GreenLED3.blinkOff();
-      GreenLED4.blinkOff();
-      RedLED1.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED2.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED3.blinkOff(); digitalWrite(P1GLED, LOW);
-      RedLED4.blinkOff(); digitalWrite(P1GLED, LOW);
+      RedLED1.blinkOff();
+      RedLED2.blinkOff();
+      RedLED3.blinkOff(); 
+      RedLED4.blinkOff();
+      CONFIRMBUTTONLED.blinkOff();
+      SENDPOWERBUTTONLED.blinkOff();
+      MAINSWITCHLED.blinkOff();
+      COALLED.blinkOff();
+      AIRLED.blinkOff();
+      VOLTAGELED.blinkOff();
+      STEAMLED.blinkOff();
     }
   }
 }
@@ -597,7 +646,10 @@ int8_t encoderRead(char enc)
     return Coal.read();     //returns the accumlated position (new position)
   } else if (enc == 'V')    //if Voltage Control
   {
-    return Air.read();      //returns the accumlated position (new position)
+    return Voltage.read();   //returns the accumlated position (new position)
+  }  else if (enc == 'G')    //if Govenor(steam) Control
+  {
+    return Govenor.read();   //returns the accumlated position (new position)
   }
 }
 
