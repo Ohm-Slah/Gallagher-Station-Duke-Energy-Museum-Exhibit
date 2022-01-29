@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/23/22
+ * Last edit:         1/29/22
  * Code usage:
  * This is an instantiation file for "phases.cpp".
  * Any libraries used or function declarations are located here.
@@ -18,39 +18,43 @@
 //define all of the pins used with particular names for identification //
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
-#define SEGCLK 4
-#define SEGDIO 5
+#define SEGCLKPIN 4
+#define SEGDIOPIN 5
+#define CONFIRMBUTTONLEDPIN 6
+#define SENDPOWERBUTTONLEDPIN 7
 #define SERVOPIN 8
+#define MAINSWITCHLEDPIN 9
 #define MOTOR_PIN 10
-//PINS 11 & 12 CANNOT BE USED FOR PWM
+// 11 & 12 are NC
 #define LED_ON_BOARD 13
 #define LIGHTBULBSWITCHPIN 15
 #define PHONESWITCHPIN 16
 #define ENCODER2APIN 18
 #define ENCODER2BPIN 19
-#define RESETSWITCHPIN 20
-#define CONFIRMBUTTONPIN 21
-#define P1RLED 22
-#define P1GLED 23
-#define P2RLED 24
-#define P2GLED 25
-#define P3RLED 26
-#define P3GLED 27
-#define P4RLED 28
-#define P4GLED 29
+// I2C communication uses 20 & 21
+#define P1LEDPIN 22
+#define P2LEDPIN 23
+#define P3LEDPIN 24
+#define P4LEDPIN 25
+#define COALLEDPIN 26
+#define AIRLEDPIN 27
+#define VOLTAGELEDPIN 28
+#define STEAMLEDPIN 29
 #define DIRPIN 30
 #define STEPPIN 31
 #define ENPIN 32
 #define HOMEPIN 33
+#define RESETSWITCHPIN 34
+#define CONFIRMBUTTONPIN 35
+#define ENCODER3APIN 36
+#define ENCODER3BPIN 37
+#define ENCODER4APIN 38
+#define ENCODER4BPIN 39
+// 40-45 are NC
 #define AUDIOPIN 46
-//50, 51, & 52 are used by the SD card reader
+// 47-49 are NC
+// 50, 51, & 52 are used by the SD card reader
 #define SDCSPIN 53
-//---------------------------------------------------------------------//
-// TODO these pins need pin definitions
-#define ENCODER3APIN 100
-#define ENCODER3BPIN 100
-#define ENCODER4APIN 100
-#define ENCODER4BPIN 100
 //---------------------------------------------------------------------//
 
 //include all libraries used //
@@ -85,7 +89,7 @@ void sleep();
 void error();
 void reset();
 
-void blinkUpdate();
+void updateLEDS();
 void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
 void stepperTick();
