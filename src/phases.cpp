@@ -11,13 +11,13 @@
  * 
 */
 
-//---------------------------------------------------------------------//
-
 #include "phases.h"
-// TODO rework phases 2
 // TODO write phases 3 and 4
 
 // TODO object orient phone code for greater readability
+
+// Begin with some setup of instances and variables not defined in "phases.h" //
+//------------------------------Start of Block--------------------------------//
 
 // reinstantiate global use variables
 volatile bool phaseChange = false;
@@ -58,7 +58,7 @@ TimedBlink STEAMLED(STEAMLEDPIN);
 const int stepsPerRevolution = 200;
 long stepperPosition;
 
-//---------------------------------------------------------------------//
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 void initialization()
 {
@@ -137,16 +137,14 @@ void reset()
 void deepSleep()
 {
   /*
-      This function is called after a great length of time has passed
-      with no interaction with the controls. Ideally, this would only
-      be called if the display was kept on after closing time at the 
-      meuseum. This is simply an attempt to save on power consumption.
+   *  This function is called after a great length of time has passed
+   *  with no interaction with the controls. Ideally, this would only
+   *  be called if the display was kept on after closing time at the 
+   *  meuseum. This is simply an attempt to save on power consumption.
   */
   if (!serialResponse("SLEEP")) error();
   while (!phaseChange) updateLEDS();
 }
-
-//---------------------------------------------------------------------//
 
 byte phaseZero()
 {
@@ -228,14 +226,14 @@ byte phaseOne()
   // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
-    blinkUpdate();  //call frequently to update blink state of all leds
-
     // phaseChange set in interrupt service routine @ resetPhases() 
     // ISR called when knife-switch (reset) state is changed
     if (phaseChange) return 1;  
 
     // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
+
+    // update phase 1 led blinking states
     updateLEDS();
 
     // read encoder positional values. Encoder position accrues automatically with interrupts
@@ -255,6 +253,7 @@ byte phaseOne()
       count--;
 
     // This block limits coalRead (rotary encoder) to a range of 0-70 //
+    //------------------------Start of Block--------------------------//
     if (coalRead)
     {
       lastResponse = millis();
@@ -265,9 +264,11 @@ byte phaseOne()
       else if (coalAngle < 0)
         coalAngle = 0;
     }
-    //----------------------------------------------------------------//
+    //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+
 
     // This block limits airRead (rotary encoder) to a range of 0-70 //
+    //------------------------Start of Block-------------------------//
     if (airRead)
     {
       lastResponse = millis();
@@ -278,12 +279,11 @@ byte phaseOne()
       else if (airAngle < 0)
         airAngle = 0;
     }
-    //---------------------------------------------------------------//
+    //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
-    // apply law of sines as well as right triangle maths to solve for tempLine //
+    // apply law of sines as well as right triangle maths to solve for tempLine
     airLine = ((float)bottomLine * sin((float)coalAngle * PI / 180)) / sin(((float)180 - coalAngle - airAngle) * PI / 180);
     tempLine = sin((float)airAngle * PI / 180) * airLine;
-    //--------------------------------------------------------------------------//
 
     //map tempLine to corespnding value on gauge. Servo range is 0-255
     servoMove(map((int)tempLine, 0, 1374, 255, 0));
@@ -293,7 +293,7 @@ byte phaseOne()
   
   //Serial.println(tempLine); // uncomment for debugging
 
-  // if tempLine was within arbitrary error margins, move on to phaseTwo().
+  // if tempLine is within arbitrary error margins, move on to phaseTwo().
   // otherwise, move to failure()
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
@@ -309,29 +309,52 @@ byte phaseOne()
 byte phaseTwo()
 {
   /*
-     This function is the second phase of the display.
+   * This function is the second phase of the display.
+   * Steps and Explanation:
+   * Play phase 2 instruction video.
+   * Simulate setting the rotational speed of the rotor in the generator to a set speed.
+   * Input from the user wil be a rotating govenor valve, output will be RPM on frahm tachometer
+   * and simulated electrical frequency of stator shown on 7-segment display.
+   * The frahm tachometer is shaken by a dc motor with an offset weight, speed controlled by PWM.
+   * 
+   * Both outputs are technically showing the same data, but one is Rotations-Per-Minute,
+   * while the other shows sinosodial revolutions per second. The latter will be more precise. 
+   * When the confirm button is pressed and the value is within an arbitrary margin of error,
+   * the process moves onto phase 3. Otherwise, failure code is called and phase 2 is repeated.
   */
-  delay(1000);
+
   if (!serialResponse("PHASE TWO")) error();
   
-  Coal.write(0);
+  // reset voltage encoder simulated position
+  Govenor.write(0);
   tm.colonOff();
+
+  // create temporary variable to store and handle data. 23 is set as lowest speed for dc motor.
   int16_t steamRead = 0;
   int16_t steam = 23;
-  phaseChangeLEDState(2);
   setDCMotor(23);
 
+  // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
+    // phaseChange set in interrupt service routine @ resetPhases() 
+    // ISR called when knife-switch (reset) state is changed
     if (phaseChange) return 1;
+
+    // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
     if (lastResponse + WAITTIME < millis()) return 0;
+
+    // update phase 1 led blinking states
     updateLEDS();
     
+    // This block limits steamRead (rotary encoder) and dc motor PWM to a range of 23-75 //
+    // This is the range of values that can be shown on frahm tachometer                 //
+    //----------------------------------Start of Block-----------------------------------//
     if (steamRead)
     {
       lastResponse = millis();
       steam += steamRead;
-      Coal.write(0);
+      Govenor.write(0);
       if (steam > 75)
       {
         steam = 75;
@@ -345,29 +368,31 @@ byte phaseTwo()
       tm.display(map(steam, 23, 75, 30, 66), true, false, 0);
       
     }
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
-
-    steamRead = encoderRead('C');
+    // read encoder positional values. Encoder position accrues automatically with interrupts.
+    steamRead = encoderRead('G');
   }
-  Serial.println(steam);
+
+  //Serial.println(steam);  //uncomment this line for serial debugging
+
+  // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
+  // otherwise run failure code and 
   if (abs(steam - 67) < 3)
   {
-    //Serial.println("SUCCESS");
     setDCMotor(64);
     return 3;
   } else {
     failure();
     return 2;
   }
-  if (phaseChange) return 1;
-  return 3;
 }
 
 byte phaseThree()
 {
   /*
-     This function is the third phase of the display.
-     It is currently is in use for a demonstration.
+   * This function is the third phase of the display.
+   * It is currently is in use for a demonstration.
   */
   if (!serialResponse("PHASE THREE")) error();
   phaseChangeLEDState(3);
@@ -420,8 +445,8 @@ byte phaseThree()
 byte phaseFour()
 {
   /*
-     This function is the fourth phase of the display.
-     This phase currently does nothing.
+   * This function is the fourth phase of the display.
+   * This phase currently does nothing.
   */
   if (!serialResponse("PHASE FOUR")) error();
   phaseChangeLEDState(4);
@@ -433,13 +458,11 @@ byte phaseFour()
   return 10;
 }
 
-//---------------------------------------------------------------------//
-
 bool serialResponse(char com[])
 {
   /*
-     This function takes a predefined string command and confirms a serial response from a computer running processing sketch.
-     Predefined commands: "RESPOND" "RING" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE"
+   * This function takes a predefined string command and confirms a serial response from a computer running processing sketch.
+   * Predefined commands: "RESPOND" "RING" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE" "SLEEP"
   */
   uint8_t attempts = 0;
 
@@ -486,7 +509,7 @@ bool serialWait()
 void failure()
 {
   /*
-     This function is the failure state of the display.
+   * This function is the failure state of the display.
   */
   delay(1000);
   if (!serialResponse("RING")) error();
@@ -509,7 +532,7 @@ void failure()
 byte completion()
 {
   /*
-     This function is the completion state of the display.
+   * This function is the completion state of the display.
   */
   if (!serialResponse("COMPLETE")) error();
   phaseChangeLEDState(10);
@@ -520,7 +543,7 @@ byte completion()
 void error()
 {
   /*
-     This function is the error state of the display. Only call this if a reset is necessary.
+   * This function is the error state of the display. Only call this if a reset is necessary.
   */
   Serial.println("CRITICAL ERROR");
   for(int i=0; i<20; i++)
@@ -536,13 +559,11 @@ void error()
 void resetPhases()
 {
   /*
-     This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
+   * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
   */
   phaseChange = true;
   currentPhase = 1;
 }
-
-//---------------------------------------------------------------------//
 
 void updateLEDS()
 {
@@ -659,7 +680,7 @@ void phaseChangeLEDState(uint8_t phase)
 void servoMove(uint16_t position)
 {
   /*
-     This function recieves a position value and moves the servo to that position. 0-255
+   * This function recieves a position value and moves the servo to that position. 0-255
   */
   analogWrite(SERVOPIN, position);
 }
@@ -667,7 +688,7 @@ void servoMove(uint16_t position)
 int8_t encoderRead(char enc)
 {
   /*
-     This function takes in a character representing what encoder value you want returned. That value is then returned.
+   * This function takes in a character representing what encoder value you want returned. That value is then returned.
   */
   if (enc == 'A')           //if Air Control
   {
@@ -687,7 +708,7 @@ int8_t encoderRead(char enc)
 void initSevenSegment()
 {
   /*
-     This function runs once at startup and initializes the 7-segment display.
+   * This function runs once at startup and initializes the 7-segment display.
   */
   tm.begin();
   tm.setBrightness(4);
@@ -696,8 +717,8 @@ void initSevenSegment()
 void displayDigitalNumber(float value)
 {
   /*
-     This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
-     Due to it's simplicity, it may be removed at a later date.
+   * This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
+   * Due to it's simplicity, it may be removed at a later date.
   */
 
   tm.display(value);
@@ -707,14 +728,14 @@ void displayDigitalNumber(float value)
 void setDCMotor(uint16_t pwmValue)
 {
   /*
-     This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
+   * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
   */
   analogWrite(MOTOR_PIN, pwmValue);
 }
 
 void StepperSetup()
 {
-  // Declare pins as Outputs
+  // Declare stepper pins as Outputs
   pinMode(STEPPIN, OUTPUT);
   pinMode(DIRPIN, OUTPUT);
   pinMode(ENPIN, OUTPUT);

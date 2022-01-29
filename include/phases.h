@@ -3,19 +3,21 @@
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
  * Last edit:         1/29/22
  * Code usage:
- * This is an instantiation file for "phases.cpp".
- * Any libraries used or function declarations are located here.
+ * This is a header file for "phases.cpp".
+ * All libraries used or function declarations are located and defined here.
  */
 
+// These prevent the linker from including "phases.h" more than once
 #pragma once
 #ifndef SETUP_H
 #define SETUP_H
 
+// Time in milliseconds to wait before timeout to phase zero and to sleep mode respectively
 #define WAITTIME 30000
 #define SLEEPTIME 10800000
 
-//---------------------------------------------------------------------//
 //define all of the pins used with particular names for identification //
+//------------------------Start of Block-------------------------------//
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
 #define SEGCLKPIN 4
@@ -55,9 +57,11 @@
 // 47-49 are NC
 // 50, 51, & 52 are used by the SD card reader
 #define SDCSPIN 53
-//---------------------------------------------------------------------//
+//^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
-//include all libraries used //
+
+// include all libraries used //
+//------Start of Block--------//
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
@@ -65,15 +69,19 @@
 #include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
 #include <SPI.h>
 #include "TimedBlink.h"
-//---------------------------------------------------------------------//
+//^^^^^^End of Block^^^^^^^^^^//
+
 
 // instantiate important global variables //
+//-----------Start of Block---------------//
 extern volatile byte currentPhase;
 extern volatile bool phaseChange;
 extern volatile long long lastResponse;
-//---------------------------------------------------------------------//
+//^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^//
 
-// instantiate all functions used in program //
+
+// define all functions used in program //
+//-----------Start of Block-------------//
 void initialization();
 byte phaseZero();
 byte phaseOne();
@@ -102,6 +110,6 @@ void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
 void fail_state_audio();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
+//^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
 
 #endif
-//---------------------------------------------------------------------//
