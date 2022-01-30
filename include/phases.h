@@ -102,9 +102,6 @@ void reset();
 void updateLEDS();
 void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
-void stepperTick();
-void homeStepper();
-void StepperSetup();
 void resetPhases();
 int8_t encoderRead(char enc);
 void initSevenSegment();
@@ -114,4 +111,55 @@ void fail_state_audio();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
 
-#endif
+class Stepper 
+{
+    public:
+        Stepper()
+        {
+            pinMode(ENPIN, OUTPUT);
+            pinMode(STEPPIN, OUTPUT);
+            pinMode(HOMEPIN, OUTPUT);
+            pinMode(DIRPIN, OUTPUT);  
+            disable();
+        }
+
+        void singleStep(bool direction)
+        {
+            if(direction) 
+            { 
+                digitalWrite(DIRPIN, HIGH);   //true = CW / false = CCW
+                stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
+            } else 
+            {
+                digitalWrite(DIRPIN, LOW);
+                stepperPosition = (stepperPosition + stepsPerRevolution - 1) % stepsPerRevolution;
+            }
+
+            digitalWrite(STEPPIN, HIGH);
+            delayMicroseconds(10);   //allow enough clock cycles to set STEPPIN to 5V
+            digitalWrite(STEPPIN, LOW);
+        }
+
+        void homeStepper()
+        {
+            digitalWrite(ENPIN, LOW);
+            while (!digitalRead(HOMEPIN))
+            {
+                singleStep(true);
+                delay(4);
+            }
+            stepperPosition = 0;
+        }
+
+        void disable()
+        {
+            digitalWrite(ENPIN, HIGH);
+        }
+
+        uint16_t stepperPosition; 
+        const int stepsPerRevolution = 200;
+};
+
+
+
+#endif // SETUP_H

@@ -12,7 +12,6 @@
 */
 
 #include "phases.h"
-// TODO write phase 4
 
 // TODO object orient phone code for greater readability
 
@@ -53,10 +52,12 @@ TimedBlink AIRLED(AIRLEDPIN);
 TimedBlink VOLTAGELED(VOLTAGELEDPIN);
 TimedBlink STEAMLED(STEAMLEDPIN);
 
-// variables for the stepper motor
-// TODO object orient stepper motor code for increased readability
-const int stepsPerRevolution = 200;
-long stepperPosition;
+// Create Stepper motor instance to control
+Stepper Synchroscope;
+
+// declare reset function @ address 0
+// basically, calling resetFunc() is equivalent to hitting the reset button on the Arduino
+void(* resetFunc) (void) = 0; 
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -93,7 +94,7 @@ void initialization()
   Serial.begin(9600);
   delay(100);
 
-  StepperSetup();
+  Synchroscope.homeStepper();
   initSevenSegment();
   tmrpcm.speakerPin = AUDIOPIN;
 
@@ -107,24 +108,17 @@ void initialization()
 
 }
 
-void(* resetFunc) (void) = 0; //declare reset function @ address 0
-
 void reset()
 {
   /*
    * This function can be ran when all items on board need to be reset
    */
   
-  homeStepper();
+  Synchroscope.homeStepper();
   phaseChangeLEDState(0);
 
   Air.write(1);
   Coal.write(1);
-
-  RedLED1.blinkOff();
-  RedLED2.blinkOff();
-  RedLED3.blinkOff();
-  RedLED4.blinkOff();
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   //servoMove((int)10);
@@ -166,8 +160,6 @@ byte phaseZero()
   }
   return 1;
 }
-
-// TODO add update blink virtually everywhere you can
 
 byte phaseOne()
 {
@@ -397,6 +389,8 @@ byte phaseThree()
    * 
    * 
   */
+
+  // begin phase 3 video.
   if (!serialResponse("PHASE THREE")) error();
 
   // reset voltage encoder simulated position
@@ -464,16 +458,42 @@ byte phaseFour()
 {
   /*
    * This function is the fourth phase of the display.
-   * This phase currently does nothing.
+   * 
   */
+
+  // begin phase 4 video.
   if (!serialResponse("PHASE FOUR")) error();
-  phaseChangeLEDState(4);
+
+  Synchroscope.homeStepper();
+  
+  // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
   {
+    // phaseChange set in interrupt service routine @ resetPhases() 
+    // ISR called when knife-switch (reset) state is changed
     if (phaseChange) return 1;
+
+    // if WAITTIME milliseconds have passed since the last interaction, enter phase 0
+    if (lastResponse + WAITTIME < millis()) return 0;
+
+    // update led blinking states
     updateLEDS();
+
+    Synchroscope.singleStep(true);
+    delay(25); // ! this delay will need to be adjusted to change difficulty
   }
-  return 10;
+
+  // ! This code below must be tested to find actual error margins //
+  // !-------------------------Start of Block----------------------//
+  if(Synchroscope.stepperPosition > 1)
+  {
+    return 10;
+  } else
+  {
+    failure();
+    return 4;
+  }
+  // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 }
 
 bool serialResponse(char com[])
@@ -741,40 +761,6 @@ void setDCMotor(uint16_t pwmValue)
    * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
   */
   analogWrite(MOTOR_PIN, pwmValue);
-}
-
-void StepperSetup()
-{
-  // Declare stepper pins as Outputs
-  pinMode(STEPPIN, OUTPUT);
-  pinMode(DIRPIN, OUTPUT);
-  pinMode(ENPIN, OUTPUT);
-  pinMode(HOMEPIN, INPUT);
-
-  // Set motor direction clockwise
-  digitalWrite(DIRPIN, HIGH);
-  // disable stepper
-  digitalWrite(ENPIN, HIGH);
-}
-
-void homeStepper()
-{
-  digitalWrite(ENPIN, LOW);
-
-  while (!digitalRead(HOMEPIN))
-  {
-    stepperTick();
-    delay(4);
-  }
-  stepperPosition = 0;
-}
-
-void stepperTick()
-{
-  digitalWrite(STEPPIN, HIGH);
-  delayMicroseconds(1);
-  digitalWrite(STEPPIN, LOW);
-  stepperPosition = (stepperPosition % stepsPerRevolution) + 1;
 }
 
 void fail_state_audio()
