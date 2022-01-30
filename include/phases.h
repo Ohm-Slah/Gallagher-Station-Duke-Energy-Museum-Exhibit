@@ -111,10 +111,12 @@ void fail_state_audio();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
 
+// Class for the use of a stepper motor. This is technically not necessary,
+// but it makes all code for the stepper motor more readable.
 class Stepper 
 {
     public:
-        Stepper()
+        Stepper()   //constructor, this is called when an instance is created
         {
             pinMode(ENPIN, OUTPUT);
             pinMode(STEPPIN, OUTPUT);
@@ -125,13 +127,15 @@ class Stepper
 
         void singleStep(bool direction)
         {
-            if(direction) 
+            if(direction) // true = CW / false = CCW
             { 
-                digitalWrite(DIRPIN, HIGH);   //true = CW / false = CCW
+                digitalWrite(DIRPIN, HIGH);
+                // keep track of the stepper motor position
                 stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
             } else 
             {
                 digitalWrite(DIRPIN, LOW);
+                // keep track of the stepper motor position
                 stepperPosition = (stepperPosition + stepsPerRevolution - 1) % stepsPerRevolution;
             }
 
@@ -143,6 +147,8 @@ class Stepper
         void homeStepper()
         {
             digitalWrite(ENPIN, LOW);
+
+            // rotate stepper motor until the homing switch is triggered.
             while (!digitalRead(HOMEPIN))
             {
                 singleStep(true);

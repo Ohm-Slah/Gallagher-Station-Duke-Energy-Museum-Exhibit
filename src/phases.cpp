@@ -150,6 +150,8 @@ byte phaseZero()
    *  This currently does nothing.
   */
   if (!serialResponse("PHASE ZERO")) error();
+  Synchroscope.disable();
+
   while (!phaseChange) 
   {
     updateLEDS();
@@ -172,6 +174,10 @@ byte phaseOne()
    *  simultaneously waiting for confirm button to be pressed
    *  if result on servo gauge is within error margins, continue onto next phase.
    *  if result is outside error margins, play failure video
+   * 
+   *  This process is not entirely accurate to how temperature in a furnace is balanced at Gallagher Station,
+   *  it does however give a user an easily understandable concept to play with,
+   *  as well as not being too far out of the realm of realism.
    * 
    *  Conceptual diagram:
    *  https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/main/Pictures/phase_one_conceptual.png
@@ -312,6 +318,9 @@ byte phaseTwo()
    * and simulated electrical frequency of stator shown on 7-segment display.
    * The frahm tachometer is shaken by a dc motor with an offset weight, speed controlled by PWM.
    * 
+   * This process is fairly accurate to how the Gallagher Station operators influenced the rotational
+   * speed of a generator. 
+   * 
    * Both outputs are technically showing the same data, but one is Rotations-Per-Minute,
    * while the other shows sinosodial revolutions per second. The latter will be more precise. 
    * When the confirm button is pressed and the value is within an arbitrary margin of error,
@@ -386,8 +395,21 @@ byte phaseThree()
 {
   /*
    * This function is the third phase of the display.
+   * Steps and Explanation:
+   * Play phase 3 instructional video. 
+   * Simulate changing the rotor dc voltage of a rotating generator to output a 
+   * nominal ac voltage from the stator.
    * 
+   * User input is a rotary encoder knob to turn,
+   * output that can be seen by the user is a DC voltage meter controlled by a servo motor,
+   * and a 7 segment display for AC voltage.
    * 
+   * This phase is fairly simple to complete for a user, but the simulated process that is on display
+   * may be a bit advanced for most. The main goal of the phase is to attempt to inform the user of 
+   * how a generator electrically functions and can be controlled at a rudimentary level.
+   * 
+   * When the confirm button is pressed and the value is within an arbitrary margin of error,
+   * the process moves onto phase 4. Otherwise, failure code is called and phase 3 is repeated.
   */
 
   // begin phase 3 video.
@@ -459,6 +481,17 @@ byte phaseFour()
   /*
    * This function is the fourth phase of the display.
    * 
+   * Steps and Explanation:
+   * Play phase 4 instructional video. 
+   * Simulate a process of connecting the generator voltage output to the electrical grid.
+   * User input is a 'send power' push button,
+   * output to the user is a synchroscope controlled be a stepper motor.
+   * 
+   * The synchroscope slowly rotates clockwise until the 'send power' button is pressed.
+   * This phase is about timing the button press when the syncroscope points at a specific location.
+   * 
+   * When the 'send power' button is pressed and the value is within an arbitrary margin of error,
+   * the process is finished and calls completion(). Otherwise, failure code is called and phase 4 is repeated.
   */
 
   // begin phase 4 video.
