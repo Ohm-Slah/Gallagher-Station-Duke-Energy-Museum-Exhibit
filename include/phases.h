@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/29/22
+ * Last edit:         2/2/22
  * Code usage:
  * This is a header file for "phases.cpp".
  * All libraries used or function declarations are located and defined here.
@@ -107,12 +107,11 @@ int8_t encoderRead(char enc);
 void initSevenSegment();
 void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
-void fail_state_audio();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
 
 // Class for the use of a stepper motor. This is technically not necessary,
-// but it makes all code for the stepper motor more readable.
+// but it makes all code for the stepper motor centralized and more readable.
 class Stepper 
 {
     public:
@@ -167,5 +166,29 @@ class Stepper
 };
 
 
+// Class for the use of the phone speaker. This is technically not necessary,
+// but it makes all code for the phone centralized and more readable.
+class AudioPlaybackFromSDCard
+{
+    public:
+        TMRpcm tmrpcm; //create instance for sd card reading
+
+        AudioPlaybackFromSDCard()
+        {
+            tmrpcm.speakerPin = AUDIOPIN;
+            tmrpcm.disable();
+        }
+
+        void playFailureAudio()
+        {
+            tmrpcm.setVolume(6);
+            tmrpcm.play("JA.wav");
+        }
+
+        void disablePlayback()
+        {
+            tmrpcm.disable();
+        }
+};
 
 #endif // SETUP_H

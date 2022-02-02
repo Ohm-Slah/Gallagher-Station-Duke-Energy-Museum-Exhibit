@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         1/29/22
+ * Last edit:         2/2/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -12,8 +12,6 @@
 */
 
 #include "phases.h"
-
-// TODO object orient phone code for greater readability
 
 // Begin with some setup of instances and variables not defined in "phases.h" //
 //------------------------------Start of Block--------------------------------//
@@ -37,7 +35,6 @@ Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
 TM1637 tm(SEGCLKPIN, SEGDIOPIN);  
 
 // Create SD Card audio instance
-TMRpcm tmrpcm; 
 
 // Create LED blinking instances tied to their pinout that can be modified individually with minimal interaction
 TimedBlink RedLED1(P1LEDPIN);
@@ -52,8 +49,11 @@ TimedBlink AIRLED(AIRLEDPIN);
 TimedBlink VOLTAGELED(VOLTAGELEDPIN);
 TimedBlink STEAMLED(STEAMLEDPIN);
 
-// Create Stepper motor instance to control
+// Create stepper motor instance to control
 Stepper Synchroscope;
+
+// Create audio-from-sd-card instance to control
+AudioPlaybackFromSDCard PhoneSpeaker;
 
 // declare reset function @ address 0
 // basically, calling resetFunc() is equivalent to hitting the reset button on the Arduino
@@ -96,7 +96,6 @@ void initialization()
 
   Synchroscope.homeStepper();
   initSevenSegment();
-  tmrpcm.speakerPin = AUDIOPIN;
 
   if (!SD.begin(SDCSPIN))
   {
@@ -119,6 +118,8 @@ void reset()
 
   Air.write(1);
   Coal.write(1);
+
+  PhoneSpeaker.disablePlayback();
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   //servoMove((int)10);
@@ -589,10 +590,9 @@ void failure()
     if (phaseChange) return;
   }
   if (!serialResponse("FAILURE")) error();
-  //tmrpcm.disable();
-  fail_state_audio();
+  PhoneSpeaker.playFailureAudio();
   delay(5000);
-  tmrpcm.disable();
+  PhoneSpeaker.disablePlayback();
 
   while (digitalRead(PHONESWITCHPIN)) {
     updateLEDS();
@@ -794,11 +794,4 @@ void setDCMotor(uint16_t pwmValue)
    * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
   */
   analogWrite(MOTOR_PIN, pwmValue);
-}
-
-void fail_state_audio()
-{
-  tmrpcm.setVolume(6);
-  tmrpcm.play("JA.wav");
-  //delay(5000);
 }
