@@ -55,7 +55,7 @@
 #define ENCODER4BPIN 39
 #define SENDPOWERBUTTONPIN 40
 #define VOLTAGESERVOPIN 41
-// 41-45 are NC
+// 42-45 are NC
 #define AUDIOPIN 46
 // 47-49 are NC
 // 50, 51, & 52 are used by the SD card reader library "SD.h"
