@@ -87,6 +87,7 @@ void initialization()
   pinMode(RESETSWITCHPIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(RESETSWITCHPIN), resetPhases, FALLING);
   pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);
+  pinMode(SENDPOWERBUTTONPIN, INPUT_PULLUP);
 
   lastResponse = millis();
 
@@ -501,7 +502,7 @@ byte phaseFour()
   Synchroscope.homeStepper();
   
   // loop until confirm button is pressed
-  while (digitalRead(CONFIRMBUTTONPIN))
+  while (digitalRead(SENDPOWERBUTTONPIN))
   {
     // phaseChange set in interrupt service routine @ resetPhases() 
     // ISR called when knife-switch (reset) state is changed
