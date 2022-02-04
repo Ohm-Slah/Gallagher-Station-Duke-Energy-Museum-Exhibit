@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/2/22
+ * Last edit:         2/4/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -29,10 +29,6 @@ Encoder Air(ENCODER1APIN, ENCODER1BPIN);
 Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
 Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
 Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
-
-// Library instantiation for 7-segment display
-//TODO Write new 7-seg implementation code
-TM1637 tm(SEGCLKPIN, SEGDIOPIN);  
 
 // Create SD Card audio instance
 
@@ -96,7 +92,6 @@ void initialization()
   delay(100);
 
   Synchroscope.homeStepper();
-  initSevenSegment();
 
   if (!SD.begin(SDCSPIN))
   {
@@ -123,11 +118,11 @@ void reset()
   PhoneSpeaker.disablePlayback();
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
-  //servoMove((int)10);
-  //delay(100);
-  //Serial.println("RIGHT HERE");
+  
   setDCMotor(0);
-  tm.clearScreen();
+
+  // clear 7-segment display
+  Serial.print("NNNNNN");
   
 }
 
@@ -334,7 +329,6 @@ byte phaseTwo()
   
   // reset govenor encoder simulated position
   Govenor.write(0);
-  tm.colonOff();
 
   // create temporary variable to store and handle data. 23 is set as lowest speed for dc motor.
   int16_t steamRead = 0;
@@ -368,9 +362,10 @@ byte phaseTwo()
       else if (steam < 23)
         steam = 23;
 
-      tm.clearScreen();
       setDCMotor(steam);
-      // TODO 7-segment code
+
+      // ! This line must be test to find appropriate values to display on 7-segment
+      Serial.print((char) map(steam, 0, 1, 0, 1));
       
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
@@ -454,7 +449,8 @@ byte phaseThree()
       else if (voltage < 0)
         voltage = 0;
 
-      // TODO 7 segment code
+      // ! This line must be test to find appropriate values to display on 7-segment
+      Serial.print((char) map(voltage, 0, 1, 0, 1));
 
       // ! This line currently inverts the value of voltage and
       // ! and moves the servo to that position, range of 0-255.
@@ -767,26 +763,6 @@ int8_t encoderRead(char enc)
   {
     return Govenor.read();   //returns the accumlated position (new position)
   }
-}
-
-void initSevenSegment()
-{
-  /*
-   * This function runs once at startup and initializes the 7-segment display.
-  */
-  tm.begin();
-  tm.setBrightness(4);
-}
-
-void displayDigitalNumber(float value)
-{
-  /*
-   * This function takes in a 4-digit value, integer or float, and displays it on the 7-segment display.
-   * Due to it's simplicity, it may be removed at a later date.
-  */
-
-  tm.display(value);
-
 }
 
 void setDCMotor(uint16_t pwmValue)

@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/2/22
+ * Last edit:         2/4/22
  * Code usage:
  * This is a header file for "phases.cpp".
  * All libraries used or function declarations are located and defined here.
@@ -18,7 +18,7 @@
 
 //define all of the pins used with particular names for identification //
 //------------------------Start of Block-------------------------------//
-// 0 & 1 are NC
+// 0 & 1 are connected to ATTiny 4313 for UART communication.
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
 #define SEGCLKPIN 4
@@ -105,8 +105,6 @@ void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
 void resetPhases();
 int8_t encoderRead(char enc);
-void initSevenSegment();
-void displayDigitalNumber(float value);
 void setDCMotor(uint16_t pwmValue);
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
