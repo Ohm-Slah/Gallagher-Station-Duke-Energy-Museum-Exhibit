@@ -35,7 +35,7 @@ byte presets[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, 
 const byte scan[6] = {D1, D2, D3, D4, D5, D6};
 const byte segments[8] = {SegA, SegB, SegC, SegD, SegE, SegF, SegG, DP};
 
-byte data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
+char data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
 
 void setup() {
   Serial.begin(9600);
@@ -57,13 +57,18 @@ void setup() {
   
 }
 
+void loop() {
+  scanAnodes(1);
+  getSerial();
+}
+
 void scanAnodes(uint16_t del)
 {
   for(int i=0; i<6; i++)
   {
     for (int j=0; j<8; j++)
     {
-      digitalWrite(segments[j], (data[i]<<j)&0x80);
+      digitalWrite(segments[j], (presets[int(data[i]-'0')]<<j)&0x80);
     }
     digitalWrite(scan[i], HIGH);
     delay(del);
@@ -71,45 +76,19 @@ void scanAnodes(uint16_t del)
     delay(1);
     
   }
-  Serial.println(1);
 }
 
-//void displayData(uint16_t del)
-//{
-//  long int count = millis();
-//  while(count+1000>millis()) scanAnodes(1);
-//}
-
-void loop() {
-  scanAnodes(1);
-  if(getSerial())
-  {
-    uint8_t buff[6] = {10,10,10,10,10,10};
-    
-    int n = valueToDisplay;
-    int i = 0;
-
-    for(int i=5; i>=0; i--) 
-    {
-        buff[i] = n % 10; // assign the last digit
-        n /= 10; // "right shift" the number
-    }
-    
-    Serial.println(buff[5]);Serial.println(buff[4]);Serial.println(buff[3]);
-    for(int j=0; j<6; j++) data[j] = presets[buff[j]];
-  }
-}
-
-bool getSerial()
+void getSerial()
 {
-  byte buff[6];
+  char buff[6];
   
   if(Serial.available())
   {
-    Serial.readBytesUntil(0x0A, buff, 6);
+    //for(int i=0; i<6; i++) data[i] = NONE;
+    uint8_t len = Serial.readBytesUntil(0x0A, data, 6);
 
-    valueToDisplay = atoi(buff);
-    //Serial.println(valueToDisplay);
+    for(int i=len; i<6; i++) data[i] = NONE;
+
     Serial.readBytes(buff, 100);
     return true;
   } else {
