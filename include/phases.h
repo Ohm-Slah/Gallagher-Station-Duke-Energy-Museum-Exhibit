@@ -18,11 +18,10 @@
 
 //define all of the pins used with particular names for identification //
 //------------------------Start of Block-------------------------------//
-// 0 & 1 are connected to ATTiny 4313 for UART communication.
+// 0 & 1 are connected to ATTiny 4313 for UART communication for 7-segment display.
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
-#define SEGCLKPIN 4
-#define SEGDIOPIN 5
+// 4 & 5 are NC
 #define CONFIRMBUTTONLEDPIN 6
 #define SENDPOWERBUTTONLEDPIN 7
 #define TEMPERATURESERVOPIN 8
@@ -65,6 +64,10 @@
 
 // include all libraries used //
 //------Start of Block--------//
+// Libraries with external links are imported.
+// Libraries with <> are internal, 
+// Libraries with "" are in the *include* folder of the project
+
 #include <Arduino.h>
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
 #include <TM1637.h>   //https://github.com/AKJ7/TM1637
