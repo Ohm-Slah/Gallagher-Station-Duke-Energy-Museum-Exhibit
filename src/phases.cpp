@@ -5,10 +5,15 @@
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
+ * See 'phases.h' for instantiation information.
  * 
  * Datasheets:
- * Rotary encoders: https://www.ctscorp.com/wp-content/uploads/288.pdf
- * 
+ * Rotary encoders:   https://www.ctscorp.com/wp-content/uploads/288.pdf
+ * DC Motor Driver:   https://www.pololu.com/product-info-merged/2136
+ * DC Motor:          https://www.johnsonelectric.com/-/media/files/product-technology/motion/dc-motors/industry-dc-motors/low-voltage-dc-motors/20-25/pc280lg-302-imperial.ashx
+ * Audio Driver PCB:  https://cdn-learn.adafruit.com/downloads/pdf/stereo-3-7w-class-d-audio-amplifier.pdf
+ * SD Card Reader:    https://media.digikey.com/pdf/Data%20Sheets/DFRobot%20PDFs/DFR0229_Web.pdf
+ * ATTiny4313:        https://ww1.microchip.com/downloads/en/DeviceDoc/doc8246.pdf
 */
 
 #include "phases.h"
@@ -21,16 +26,11 @@ volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 volatile long long lastResponse = 0;
 
-// Create a variable to store the servo position
-int angle = 0;
-
 // Create an Encoder instances, using 2 pins each.
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
 Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
 Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
 Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
-
-// Create SD Card audio instance
 
 // Create LED blinking instances tied to their pinout that can be modified individually with minimal interaction
 TimedBlink RedLED1(P1LEDPIN);
@@ -313,13 +313,13 @@ byte phaseTwo()
    * Simulate setting the rotational speed of the rotor in the generator to a set speed.
    * Input from the user wil be a rotating govenor valve, output will be RPM on frahm tachometer
    * and simulated electrical frequency of stator shown on 7-segment display.
-   * The frahm tachometer is shaken by a dc motor with an offset weight, speed controlled by PWM.
+   * The frahm tachometer is physically shaken by a dc motor with an offset weight, speed controlled by PWM.
    * 
    * This process is fairly accurate to how the Gallagher Station operators influenced the rotational
    * speed of a generator. 
    * 
    * Both outputs are technically showing the same data, but one is Rotations-Per-Minute,
-   * while the other shows sinosodial revolutions per second. The latter will be more precise. 
+   * while the other shows sinusoidal revolutions per second. The latter will be more precise. 
    * When the confirm button is pressed and the value is within an arbitrary margin of error,
    * the process moves onto phase 3. Otherwise, failure code is called and phase 2 is repeated.
   */
@@ -364,7 +364,7 @@ byte phaseTwo()
 
       setDCMotor(steam);
 
-      // ! This line must be test to find appropriate values to display on 7-segment
+      // ! This line must be tested to find appropriate values to display on 7-segment
       Serial.print((char) map(steam, 0, 1, 0, 1));
       
     }
@@ -449,12 +449,10 @@ byte phaseThree()
       else if (voltage < 0)
         voltage = 0;
 
-      // ! This line must be test to find appropriate values to display on 7-segment
+      // ! This line must be tested to find appropriate values to display on 7-segment
       Serial.print((char) map(voltage, 0, 1, 0, 1));
 
-      // ! This line currently inverts the value of voltage and
-      // ! and moves the servo to that position, range of 0-255.
-      // ! The actual postions must be found through trial and error.
+      // ! This line must be tested to find appropriate values to display through servo
       analogWrite(VOLTAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//

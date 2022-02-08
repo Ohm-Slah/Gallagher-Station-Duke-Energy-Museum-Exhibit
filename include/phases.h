@@ -16,8 +16,10 @@
 #define WAITTIME 30000
 #define SLEEPTIME 10800000
 
+
 //define all of the pins used with particular names for identification //
 //------------------------Start of Block-------------------------------//
+
 // 0 & 1 are connected to ATTiny 4313 for UART communication for 7-segment display.
 #define ENCODER1APIN 2
 #define ENCODER1BPIN 3
@@ -64,17 +66,24 @@
 
 // include all libraries used //
 //------Start of Block--------//
+
 // Libraries with external links are imported.
 // Libraries with <> are internal, 
-// Libraries with "" are in the *include* folder of the project
+// Libraries with "" are in the same directory as this file
 
+// Standard Arduino library for I/O functionality
 #include <Arduino.h>
+// Library to count rotary encoder 'pulses' in the backgroud with interrupts
 #include <Encoder.h>  //https://github.com/PaulStoffregen/Encoder
-#include <TM1637.h>   //https://github.com/AKJ7/TM1637
+// Standard library of Arduino that allows SD card file manipulation
 #include <SD.h>
+// Library that links with SD.h, allows for audio playback through I/O
 #include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
+// Standard Arduino SPI library
 #include <SPI.h>
+// Library that allows controlling the blinking of multiple LEDs with minimal interaction
 #include "TimedBlink.h"
+
 //^^^^^^End of Block^^^^^^^^^^//
 
 
@@ -111,6 +120,7 @@ int8_t encoderRead(char enc);
 void setDCMotor(uint16_t pwmValue);
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
+
 
 // Class for the use of a stepper motor. This is technically not necessary,
 // but it makes all code for the stepper motor centralized and more readable.
