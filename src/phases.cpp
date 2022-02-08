@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/4/22
+ * Last edit:         2/8/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -664,7 +664,7 @@ void phaseChangeLEDState(uint8_t phase)
       RedLED4.blinkOff();
       CONFIRMBUTTONLED.blinkOff();
       SENDPOWERBUTTONLED.blinkOff();
-      MAINSWITCHLED.blink(500, 500);
+      MAINSWITCHLED.blink(500, 500);  // 500ms on / 500ms off
       COALLED.blinkOff();
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();

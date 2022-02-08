@@ -1,5 +1,24 @@
+/*
+ * File name:         "ATTiny_Segment.ino"
+ * Contributor(s):    Elliot Eickholtz
+ * Last edit:         2/8/22
+ * Code usage:
+ * This code is compiled and linked on the Arduino IDE.
+ * It is meant to be run on an ATTiny4313 microcontroller, and is intended
+ * to control a unique part of an old 7-segment display, which is full of 
+ * solely passive components. More information can be found in the project
+ * TDP for specific applications.
+ * 
+ * Full code Repository:
+ * https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit
+ */
+
+// Define CPU clockspeed
 #define F_CPU 8000000UL
 
+#include <Arduino.h>
+
+// define bytes for 7-segment display to replace these words
 #define NONE  0b11111111
 #define ZERO  0b00000011
 #define ONE   0b10011111
@@ -12,6 +31,7 @@
 #define EIGHT 0b00000001
 #define NINE  0b00011001
 
+// define I/O pins tied to 7-segment anodes
 #define D1 7
 #define D2 6
 #define D3 5
@@ -19,6 +39,7 @@
 #define D5 4
 #define D6 3
 
+// define I/O pins tied to 7-segment cathodes
 #define SegA  9
 #define SegB 10
 #define SegC 11
@@ -28,16 +49,20 @@
 #define SegG 15
 #define DP   16
 
-uint16_t valueToDisplay = 0;
-
+// define array of presets to scroll through
 byte presets[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE};
 
+// define order of annodes tied to their I/O that needs to be multiplexed
 const byte scan[6] = {D1, D2, D3, D4, D5, D6};
+// define order of segments tied to their I/O
 const byte segments[8] = {SegA, SegB, SegC, SegD, SegE, SegF, SegG, DP};
 
+// array to hold data that will be scrolled through to multiplex
 char data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
 
-void setup() {
+void setup()  //only runs once at startup.
+{
+  // basic initialization
   Serial.begin(9600);
   Serial.setTimeout(5);
   
@@ -52,18 +77,21 @@ void setup() {
     pinMode(i, OUTPUT);
     digitalWrite(i, HIGH);
   }
-  //delay(1000);
-  digitalWrite(scan[0], HIGH);
   
 }
 
-void loop() {
+void loop() //constantly runs repeatedly
+{
+  // sweep trough the annodes with data array 1ms between each
   scanAnodes(1);
+  // check serial port for incoming data, replace current data if any
   getSerial();
 }
 
 void scanAnodes(uint16_t del)
 {
+  // push currently saved data onto the 7-segment LEDs, multiplexing them once
+
   for(int i=0; i<6; i++)
   {
     for (int j=0; j<8; j++)
@@ -80,6 +108,8 @@ void scanAnodes(uint16_t del)
 
 void getSerial()
 {
+  // checks for serial data at buffer, replaces current data array with new data
+
   char buff[6];
   
   if(Serial.available())
@@ -90,8 +120,5 @@ void getSerial()
     for(int i=len; i<6; i++) data[i] = NONE;
 
     Serial.readBytes(buff, 100);
-    return true;
-  } else {
-    return false;
   }
 }

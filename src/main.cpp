@@ -1,12 +1,15 @@
 /*
- * File name:         "main.ino"
+ * File name:         "main.cpp"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         1/29/22
+ * Last edit:         2/8/22
  * Code usage:
  * This is the main cpp file used in the creation of a museum exhibit of the Gallagher Station is New Albany, Indiana. 
  * The intended usage of this code is to simulate the responsibilities of a control station operator of a coal-fired power plant, 
  * while keeping the content and interactions approachable for a person with little-to-no experience in the field. 
  * This code is sequential, and can be subdivided into 5 main sections represented numerically from 'zero' to 'four'.
+ * 
+ * Full code Repository:
+ * https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit
  */
 
 #include "phases.h"
