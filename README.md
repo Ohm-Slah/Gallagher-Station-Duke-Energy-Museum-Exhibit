@@ -1,7 +1,7 @@
 # Gallagher-Station-Museum-Exhibit
 ![GitHub repo size](https://img.shields.io/github/repo-size/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit) ![Lines of code](https://img.shields.io/tokei/lines/github/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit)
 
-A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station, created by Purdue Polytechnic SoET students. This repository is only for the use of and contributed by these students. However, this information is for public viewing and usage. Any unwarranted pull-requests from unathorized individuals will be rejected, as this is to document the final product as-is. All code is under no licensure and is open for usage in the public domain. Please read the [license](https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/blob/main/LICENSE) for more information.
+A code repository for the Duke Energy funded exhibit at the Padgett Museum of the Gallagher Station, created by Purdue Polytechnic SoET students. This repository is only for the use of and contributed by these students. However, this information is for public viewing and usage. Any unwarranted pull-requests from unathorized individuals will be rejected, as this is to document the final product as-is. All code is under no licensure and is open for usage in the public domain. 
 
 ![0607_ky_gallagher_station_plant](https://user-images.githubusercontent.com/72700028/139541656-05c52c4c-2b8d-4746-b4ec-811eb962cbc5.jpg)
 
@@ -12,7 +12,7 @@ This project will be located at the Padgett Museum in New Albany, IN. The showca
 
 The code running on the Arduino Mega was written on a VSCode environment compiled and linked with the extension PlatformIO.
 
-The code running on the ATTiny4313 controlling the 7-segment diplay is writen, compiled, and linked in the Arduino IDE.
+The code running on the ATTiny4313 controlling the 7-segment display is writen, compiled, and linked in the Arduino IDE.
 
 # Folder Structure
 The [src folder](https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/tree/main/src) contains all cpp files to run on the Arduino Mega.
