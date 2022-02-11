@@ -12,7 +12,7 @@ This project will be located at the Padgett Museum in New Albany, IN. The showca
 
 The code running on the Arduino Mega was written on a VSCode environment compiled and linked with the extension PlatformIO.
 
-The code running on the ATTiny4313 controlling the 7-segment diplay is writen, compiled, and linked in the Arduino IDE.
+The code running on the ATTiny4313 controlling the 7-segment display is writen, compiled, and linked in the Arduino IDE.
 
 # Folder Structure
 The [src folder](https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit/tree/main/src) contains all cpp files to run on the Arduino Mega.
