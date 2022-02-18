@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/8/22
+ * Last edit:         2/18/22
  * Code usage:
  * This is a header file for "phases.cpp".
  * All libraries used or function declarations are located and defined here.
@@ -18,49 +18,105 @@
 
 
 //define all of the pins used with particular names for identification //
+//in order of junctions from the custom PCB                            //
 //------------------------Start of Block-------------------------------//
 
-// 0 & 1 are connected to ATTiny 4313 for UART communication for 7-segment display.
-#define ENCODER1APIN 2
-#define ENCODER1BPIN 3
-// 4 & 5 are NC
+//--------J23--------//
+#define ENCODER1APIN 9
+#define ENCODER1BPIN 19
+// GND
+#define ENCODER2APIN 10
+#define ENCODER2BPIN 18
+// GND
+#define ENCODER3APIN 11
+#define ENCODER3BPIN 2
+// GND
+#define ENCODER4APIN 12
+#define ENCODER4BPIN 3
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J9---------//
+#define MOTOR_PIN 23
+#define DIRPIN 25
+#define STEPPIN 27
+#define ENPIN 22
+#define HOMEPIN 24
+// GND
+// NC
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J1---------//
+#define P1LEDPIN 21
+#define P2LEDPIN 20
+#define P3LEDPIN 17
+#define P4LEDPIN 16
+#define COALLEDPIN 15
+#define AIRLEDPIN 14
+#define VOLTAGELEDPIN 4
+#define STEAMLEDPIN 5
 #define CONFIRMBUTTONLEDPIN 6
 #define SENDPOWERBUTTONLEDPIN 7
-#define TEMPERATURESERVOPIN 8
-#define MAINSWITCHLEDPIN 9
-#define MOTOR_PIN 10
-// 11 & 12 are NC
-#define LED_ON_BOARD 13
-#define LIGHTBULBSWITCHPIN 15
-#define PHONESWITCHPIN 16
-#define ENCODER2APIN 18
-#define ENCODER2BPIN 19
-// I2C communication uses 20 & 21
-#define P1LEDPIN 22
-#define P2LEDPIN 23
-#define P3LEDPIN 24
-#define P4LEDPIN 25
-#define COALLEDPIN 26
-#define AIRLEDPIN 27
-#define VOLTAGELEDPIN 28
-#define STEAMLEDPIN 29
-#define DIRPIN 30
-#define STEPPIN 31
-#define ENPIN 32
-#define HOMEPIN 33
-#define RESETSWITCHPIN 34
-#define CONFIRMBUTTONPIN 35
-#define ENCODER3APIN 36
-#define ENCODER3BPIN 37
-#define ENCODER4APIN 38
-#define ENCODER4BPIN 39
-#define SENDPOWERBUTTONPIN 40
-#define VOLTAGESERVOPIN 41
-// 42-45 are NC
+#define MAINSWITCHLEDPIN 8
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J6---------//
+// 5V
+#define TEMPERATURESERVOPIN 44
+// GND
+// 5V
+#define VOLTAGESERVOPIN 45
+// GND
+// NC
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J41--------//
+// 5V
+// 0
+// 1
+// GND
+// NC
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J48--------//
+// 5V
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J15--------//
 #define AUDIOPIN 46
-// 47-49 are NC
-// 50, 51, & 52 are used by the SD card reader library "SD.h"
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J35--------//
+#define SENDPOWERBUTTONPIN 40
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J49--------//
+#define PHONESWITCHPIN 16
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J29--------//
+#define RESETSWITCHPIN 34
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J31--------//
+#define LIGHTBULBSWITCHPIN 15
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+//--------J33--------//
+#define CONFIRMBUTTONPIN 35
+// GND
+//^^^^^^^^^^^^^^^^^^^//
+
+#define LED_ON_BOARD 13
 #define SDCSPIN 53
+// 50, 51, & 52 are used by the SD card reader library "SD.h"
+
 //^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 
