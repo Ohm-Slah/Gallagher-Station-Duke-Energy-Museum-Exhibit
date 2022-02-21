@@ -12,4 +12,7 @@ application.macosx
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+*/.bak
+*/.dwl
+*/.dwl2
 out
