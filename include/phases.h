@@ -258,8 +258,31 @@ class AudioPlaybackFromSDCard
 
         void playFailureAudio()
         {
-            tmrpcm.setVolume(4);
-            tmrpcm.play("JA.wav");
+            if ( !tmrpcm.isPlaying() ) {
+                // no audio file is playing
+                File entry =  root.openNextFile();  // open next file
+                if (! entry) {
+                    // no more files
+                    root.rewindDirectory();  // go to start of the folder
+                    return;
+                }
+
+                uint8_t nameSize = String(entry.name()).length();  // get file name size
+                String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+
+                if ( str1.equalsIgnoreCase(".wav") ) {
+                    // the opened file has '.wav' extension
+                    tmrpcm.play( entry.name() );      // play the audio file
+                    Serial.print("Playing file: ");
+                    Serial.println( entry.name() );
+                }
+
+                else {
+                    // not '.wav' format file
+                    entry.close();
+                    return;
+                }
+            }
         }
 
         void disablePlayback()
