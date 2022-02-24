@@ -240,16 +240,25 @@ class AudioPlaybackFromSDCard
 {
     public:
         TMRpcm tmrpcm; //create instance for sd card reading
+        File root;
 
         AudioPlaybackFromSDCard()
         {
             tmrpcm.speakerPin = AUDIOPIN;
             tmrpcm.disable();
+            if (!SD.begin(SDCSPIN))
+            {
+                Serial.println("NO SD CARD");
+                error();
+            }
+            root = SD.open("/");      // open SD card main root
+            tmrpcm.setVolume(4);    //   0 to 7. Set volume level
+            tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
         }
 
         void playFailureAudio()
         {
-            tmrpcm.setVolume(6);
+            tmrpcm.setVolume(4);
             tmrpcm.play("JA.wav");
         }
 

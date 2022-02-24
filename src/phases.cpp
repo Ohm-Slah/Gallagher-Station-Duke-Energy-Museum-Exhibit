@@ -93,12 +93,6 @@ void initialization()
 
   Synchroscope.homeStepper();
 
-  if (!SD.begin(SDCSPIN))
-  {
-    Serial.println("NO SD CARD");
-    error();
-  }
-
   if (!serialResponse("RESPOND")) error();
 
 }
