@@ -1,7 +1,7 @@
 /*
- * File name:         "ATTiny_Segment.ino"
+ * File name:         "ATTiny_Code.ino"
  * Contributor(s):    Elliot Eickholtz
- * Last edit:         2/8/22
+ * Last edit:         3/10/22
  * Code usage:
  * This code is compiled and linked on the Arduino IDE.
  * It is meant to be run on an ATTiny4313 microcontroller, and is intended
@@ -30,6 +30,10 @@
 #define SEVEN 0b00011111
 #define EIGHT 0b00000001
 #define NINE  0b00011001
+#define A     0b00010001
+#define C     0b01100011
+#define H     0b10010001
+#define Z     0b00100101
 
 // define I/O pins tied to 7-segment anodes
 #define D1 7
