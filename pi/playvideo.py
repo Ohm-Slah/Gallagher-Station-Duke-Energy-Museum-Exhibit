@@ -1,7 +1,7 @@
 #
 # File name:         "playvideo.py"
 # Contributor(s):    Elliot Eickholtz
-# Last edit:         2/9/22
+# Last edit:         3/11/22
 # Code usage:
 # This code is intended to run on a Raspberry Pi with a USB serial connection to the Arduino Mega
 # When a predefined serial command is recieved, the appropriate video and audio will play
@@ -16,13 +16,30 @@ import serial                   # library for basic serial communication
 import time                     # library for a delay
 
 # link phase videos file location to variables
+deepsleep = "/home/pi/Desktop/main/data/DEEPSLEEP.mov"
 phasezero = "/home/pi/Desktop/main/data/PHASE0.mov"
-phaseone = "/home/pi/Desktop/main/data/PHASE1.mov"
-phasetwo = "/home/pi/Desktop/main/data/PHASE2.mov"
-phasethree = "/home/pi/Desktop/main/data/PHASE3.mov"
-phasefour = "/home/pi/Desktop/main/data/PHASE4.mov"
+
+phaseoneintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
+phaseoneloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
+phaseonefailhigh = "/home/pi/Desktop/main/data/PHASE1FH.mov"
+phaseonefaillow = "/home/pi/Desktop/main/data/PHASE1FL.mov"
+
+phasetwointro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
+phasetwoloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
+phasetwofailhigh = "/home/pi/Desktop/main/data/PHASE2FH.mov"
+phasetwofaillow = "/home/pi/Desktop/main/data/PHASE2FL.mov"
+
+phasethreeintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
+phasethreeloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
+phasethreefailhigh = "/home/pi/Desktop/main/data/PHASE3FH.mov"
+phasethreefaillow = "/home/pi/Desktop/main/data/PHASE3FL.mov"
+
+phasefourintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
+phasefourloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
+phasefourfailhigh = "/home/pi/Desktop/main/data/PHASE4FH.mov"
+phasefourfaillow = "/home/pi/Desktop/main/data/PHASEFL.mov"
+
 complete = "/home/pi/Desktop/main/data/COMPLETE.mov"
-fail = "/home/pi/Desktop/main/data/FAIL.mov"
 
 # link variable name to serial instance on raspberry pi
 # this is actually changing every now and then when power cycled between 2 locations
@@ -119,31 +136,96 @@ while True:
             elif "INTRO" in s:
                 print("intro video")
                 ser.write('1')
+
+            elif "DEEP SLEEP" in s:
+                print("deep sleep")
+                ser.write('1')
+                startVideo(deepsleep, n)
             
             elif "PHASE ZERO" in s:
                 print("phase zero")
                 ser.write('1')
                 startVideo(phasezero, n)
             
-            elif "PHASE ONE" in s:
-                print("phase one")
+            elif "PHASE ONE INTRO" in s:
+                print("phase one intro")
                 ser.write('1')
-                startVideo(phaseone, n)
+                startVideo(phaseoneintro, n)
             
-            elif "PHASE TWO" in s:
-                print("phase two")
+            elif "PHASE ONE LOOP" in s:
+                print("phase one loop")
                 ser.write('1')
-                startVideo(phasetwo, n)
+                startVideo(phaseoneloop, n)
+
+            elif "PHASE ONE FAIL HIGH" in s:
+                print("phase one fail high")
+                ser.write('1')
+                startVideo(phaseonefailhigh, n)
+
+            elif "PHASE ONE FAIL LOW" in s:
+                print("phase one fail low")
+                ser.write('1')
+                startVideo(phaseonefaillow, n)
             
-            elif "PHASE THREE" in s:
-                print("phase three")
+            elif "PHASE TWO INTRO" in s:
+                print("phase two intro")
                 ser.write('1')
-                startVideo(phasethree, n)
+                startVideo(phasetwointro, n)
             
-            elif "PHASE FOUR" in s:
-                print("phase four")
+            elif "PHASE TWO LOOP" in s:
+                print("phase two loop")
                 ser.write('1')
-                startVideo(phasefour, n)
+                startVideo(phasetwoloop, n)
+            
+            elif "PHASE TWO FAIL HIGH" in s:
+                print("phase two fail high")
+                ser.write('1')
+                startVideo(phasetwofailhigh, n)
+            
+            elif "PHASE TWO FAIL LOW" in s:
+                print("phase two fail low")
+                ser.write('1')
+                startVideo(phasetwofaillow, n)
+            
+            elif "PHASE THREE INTRO" in s:
+                print("phase three intro")
+                ser.write('1')
+                startVideo(phasethreeintro, n)
+            
+            elif "PHASE THREE LOOP" in s:
+                print("phase three loop")
+                ser.write('1')
+                startVideo(phasethreeloop, n)
+            
+            elif "PHASE THREE FAIL HIGH" in s:
+                print("phase three fail high")
+                ser.write('1')
+                startVideo(phasethreefailhigh, n)
+            
+            elif "PHASE THREE FAIL LOW" in s:
+                print("phase three fail low")
+                ser.write('1')
+                startVideo(phasethreefaillow, n)
+            
+            elif "PHASE FOUR INTRO" in s:
+                print("phase four intro")
+                ser.write('1')
+                startVideo(phasefourintro, n)
+            
+            elif "PHASE FOUR LOOOP" in s:
+                print("phase four loop")
+                ser.write('1')
+                startVideo(phasefourloop, n)
+            
+            elif "PHASE FOUR FAIL HIGH" in s:
+                print("phase four fail high")
+                ser.write('1')
+                startVideo(phasefourfailhigh, n)
+            
+            elif "PHASE FOUR FAIL LOW" in s:
+                print("phase four fail low")
+                ser.write('1')
+                startVideo(phasefourfaillow, n)
             
             elif "CRITICAL ERROR" in s:
                 print("Error, resetting...")
@@ -153,15 +235,6 @@ while True:
                 print("completion")
                 ser.write('1')
                 startVideo(complete, n)
-            
-            elif "FAILURE" in s:
-                print("fail")
-                ser.write('1')
-            
-            elif "RING" in s:
-                print("ring phone")
-                ser.write('1')
-                startVideo(fail, n)
 
     # catch all errors, print error and continue running
     except Exception as e:

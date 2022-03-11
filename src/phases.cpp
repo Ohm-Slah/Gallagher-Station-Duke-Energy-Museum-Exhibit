@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/8/22
+ * Last edit:         3/11/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -128,7 +128,7 @@ void deepSleep()
    *  be called if the display was kept on after closing time at the 
    *  meuseum. This is simply an attempt to save on power consumption.
   */
-  if (!serialResponse("SLEEP")) error();
+  if (!serialResponse("DEEP SLEEP")) error();
   while (!phaseChange) updateLEDS();
 }
 
@@ -211,7 +211,7 @@ byte phaseOne()
   lastResponse = millis();
   
   // Begin phase 1 video.
-  if (!serialResponse("PHASE ONE")) error();
+  if (!serialResponse("PHASE ONE INTRO")) error();
 
   // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -285,7 +285,7 @@ byte phaseOne()
   //Serial.println(tempLine); // uncomment for debugging
 
   // if tempLine is within arbitrary error margins, move on to phaseTwo().
-  // otherwise, move to failure()
+  // otherwise, move to failure state
   if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
   {
     // move gauge servo to optimal value, found through trial and error
@@ -522,8 +522,15 @@ byte phaseFour()
 bool serialResponse(char com[])
 {
   /*
-   * This function takes a predefined string command and confirms a serial response from a computer running processing sketch.
-   * Predefined commands: "RESPOND" "RING" "PHASE ZERO" "PHASE ONE" "PHASE TWO" "PHASE THREE" "PHASE FOUR" "FAILURE" "COMPLETE" "SLEEP"
+   * This function takes a predefined string command and confirms a serial 
+   * response from a Raspberry Pi running a python sketch.
+   * Predefined commands: 
+   * "RESPOND" "INTRO" "PHASE ZERO" "DEEP SLEEP"
+   * "PHASE ONE INTRO" "PHASE ONE LOOP" "PHASE ONE FAIL HIGH" "PHASE ONE FAIL LOW"
+   * "PHASE TWO INTRO" "PHASE TWO LOOP" "PHASE TWO FAIL HIGH" "PHASE TWO FAIL LOW"
+   * "PHASE THREE INTRO" "PHASE THREE LOOP" "PHASE THREE FAIL HIGH" "PHASE THREE FAIL LOW"
+   * "PHASE FOUR INTRO" "PHASE FOUR LOOP" "PHASE FOUR FAIL HIGH" "PHASE FOUR FAIL LOW"
+   * "COMPLETE" "SLEEP"
   */
   uint8_t attempts = 0;
 
