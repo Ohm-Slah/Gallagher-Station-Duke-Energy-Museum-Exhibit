@@ -1,7 +1,7 @@
 #
 # File name:         "playvideo.py"
 # Contributor(s):    Elliot Eickholtz
-# Last edit:         3/11/22
+# Last edit:         3/16/22
 # Code usage:
 # This code is intended to run on a Raspberry Pi with a USB serial connection to the Arduino Mega
 # When a predefined serial command is recieved, the appropriate video and audio will play
@@ -23,6 +23,7 @@ phaseoneintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
 phaseoneloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
 phaseonefailhigh = "/home/pi/Desktop/main/data/PHASE1FH.mov"
 phaseonefaillow = "/home/pi/Desktop/main/data/PHASE1FL.mov"
+phaseoneunbalanced = "/home/pi/Desktop/main/data/PHASE1UNB.mov"
 
 phasetwointro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
 phasetwoloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
@@ -38,6 +39,8 @@ phasefourintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
 phasefourloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
 phasefourfailhigh = "/home/pi/Desktop/main/data/PHASE4FH.mov"
 phasefourfaillow = "/home/pi/Desktop/main/data/PHASEFL.mov"
+
+ring = "/home/pi/Desktop/main/data/RING.mov"
 
 complete = "/home/pi/Desktop/main/data/COMPLETE.mov"
 
@@ -166,6 +169,11 @@ while True:
                 print("phase one fail low")
                 ser.write('1')
                 startVideo(phaseonefaillow, n)
+
+            elif "PHASE ONE UNBALANCED" in s:
+                print("phase one unbalanced")
+                ser.write('1')
+                startVideo(phaseoneunbalanced, n)
             
             elif "PHASE TWO INTRO" in s:
                 print("phase two intro")
@@ -226,6 +234,11 @@ while True:
                 print("phase four fail low")
                 ser.write('1')
                 startVideo(phasefourfaillow, n)
+
+            elif "RING" in s:
+                print("ring phone")
+                ser.write('1')
+                startVideo(ring, n)
             
             elif "CRITICAL ERROR" in s:
                 print("Error, resetting...")

@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         3/11/22
+ * Last edit:         3/16/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -194,7 +194,7 @@ byte phaseOne()
   int16_t coalAngle = 0;
   int16_t airAngle = 0;
   float airLine = 0;
-  uint16_t bottomLine = 1000; //arbitrary
+  uint16_t bottomLine = 1000; //arbitrary value
   float tempLine = 0;
   // optimum temp of boiler: 2150 degF
 
@@ -286,15 +286,29 @@ byte phaseOne()
 
   // if tempLine is within arbitrary error margins, move on to phaseTwo().
   // otherwise, move to failure state
-  if (abs(tempLine - 970) < 50 && abs(airAngle - coalAngle) < 6)
+  uint8_t tempTolerance = 50;
+  uint8_t balanceTolerance = 6;
+  uint16_t idealtempLine = 970;
+  uint8_t idealServoPosistion = 79;
+
+  if ((tempLine - idealtempLine) < tempTolerance) // checks if too high
   {
-    // move gauge servo to optimal value, found through trial and error
-    analogWrite(TEMPERATURESERVOPIN, 79);
-    return 2;
-  } else {
-    failure();
+    if ((tempLine - idealtempLine) > -tempTolerance)  // checks if too low
+    {
+      if (abs(airAngle - coalAngle) < balanceTolerance) // checks if balance is out
+      {
+        // move gauge servo to optimal value, found through trial and error
+        analogWrite(TEMPERATURESERVOPIN, idealServoPosistion);
+        return 2;
+      }
+      failure(1, 3);
+      return 1;
+    }
+    failure(1, 2);
     return 1;
   }
+  failure(1, 1);
+  return 1;
 
 }
 
@@ -372,14 +386,19 @@ byte phaseTwo()
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
-  if (abs(steam - 67) < 3)
+  if (steam - 67 < 3)
   {
-    setDCMotor(64);
-    return 3;
-  } else {
-    failure();
-    return 2;
+    if ((steam - 67) > -3)
+    {
+      setDCMotor(64);
+      return 3;
+    }
+    failure(2, 2);
+  return 2;
   }
+  failure(2, 1);
+  return 2;
+
 }
 
 byte phaseThree()
@@ -457,12 +476,15 @@ byte phaseThree()
   // !-------------------------Start of Block----------------------//
   if (abs(voltage - 0) < 1)  
   {
-    return 4; // begin phase 4
-  } else 
-  {
-    failure();
+    if ((voltage - 0) > -1)
+    {
+      return 4; // begin phase 4
+    }
+    failure(3, 2);
     return 3; // begin phase 3, again
   }
+  failure(3, 1);
+  return 3; // begin phase 3, again
   // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 }
 
@@ -508,14 +530,17 @@ byte phaseFour()
 
   // ! This code below must be tested to find actual error margins //
   // !-------------------------Start of Block----------------------//
-  if(Synchroscope.stepperPosition > 1)
+  if((Synchroscope.stepperPosition - 0) > 1)
   {
-    return 10;
-  } else
-  {
-    failure();
+    if ((Synchroscope.stepperPosition - 0) > -1)
+    {
+      return 10;
+    }
+    failure(4, 2);
     return 4;
   }
+  failure(4, 1);
+  return 4;
   // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 }
 
@@ -574,10 +599,16 @@ bool serialWait()
   else return false;
 }
 
-void failure()
+void failure(uint8_t phase, uint8_t failureReason)
 {
   /*
    * This function is the failure state of the display.
+   * It takes in the phase that the failure occured at, as well as
+   * the reason in which it failed. The failure states that exist are shown below:
+   * 
+   * 1 : Too high failure
+   * 2 : Too low failure
+   * 3 : Other failure
   */
   delay(1000);
   if (!serialResponse("RING")) error();
@@ -585,12 +616,72 @@ void failure()
     updateLEDS();
     if (phaseChange) return;
   }
-  if (!serialResponse("FAILURE")) error();
+
+  switch (phase) 
+  {
+    case 1:
+      switch (failureReason)
+      {
+        case 1:
+          if (!serialResponse("PHASE ONE FAIL HIGH")) error();
+        break;
+          
+        case 2:
+          if (!serialResponse("PHASE ONE FAIL LOW")) error();
+        break;
+
+        case 3:
+          if (!serialResponse("PHASE ONE UNBALANCED")) error();
+        break;
+      }
+    break;
+
+    case 2:
+      switch (failureReason)
+      {
+        case 1:
+          if (!serialResponse("PHASE TWO FAIL HIGH")) error();
+        break;
+          
+        case 2:
+          if (!serialResponse("PHASE TWO FAIL LOW")) error();
+        break;
+      }
+    break;
+
+    case 3:
+      switch (failureReason)
+      {
+        case 1:
+          if (!serialResponse("PHASE THREE FAIL HIGH")) error();
+        break;
+          
+        case 2:
+          if (!serialResponse("PHASE THREE FAIL LOW")) error();
+        break;
+      }
+    break;
+
+    case 4:
+      switch (failureReason)
+      {
+        case 1:
+          if (!serialResponse("PHASE FOUR FAIL HIGH")) error();
+        break;
+          
+        case 2:
+          if (!serialResponse("PHASE FOUR FAIL LOW")) error();
+        break;
+      }
+    break;
+  }
+
   PhoneSpeaker.playFailureAudio();
   delay(5000);
   PhoneSpeaker.disablePlayback();
 
-  while (digitalRead(PHONESWITCHPIN)) {
+  while (digitalRead(PHONESWITCHPIN)) 
+  {
     updateLEDS();
     if (phaseChange) return;
   }

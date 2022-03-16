@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         2/18/22
+ * Last edit:         3/16/22
  * Code usage:
  * This is a header file for "phases.cpp".
  * All libraries used or function declarations are located and defined here.
@@ -162,7 +162,7 @@ byte phaseFour();
 
 bool serialResponse(char com[]);
 bool serialWait();
-void failure();
+void failure(uint8_t phase, uint8_t failureReason);
 byte completion();
 void sleep();
 void error();
