@@ -12,55 +12,56 @@
  * https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit
  */
 
-#include "phases.h"
-
+//#include "phases.h"
+#include <Arduino.h>
 void setup() 
 {
-  
-  initialization();
+  Serial.begin(9600);
+  while(1) Serial.println("TEST");
+  //initialization();
   
 }
 
 void loop()
 {  
-  switch(currentPhase)
-  {
-    case 0:
-      reset();
-      lastResponse = millis();
-      phaseChange = false;
-      phaseChangeLEDState(0);
-      currentPhase = phaseZero();
-    break;
-    case 1:
-      phaseChange = false;
-      phaseChangeLEDState(1);
-      currentPhase = phaseOne();
-    break;
-    case 2:
-      phaseChange = false;
-      phaseChangeLEDState(2);
-      currentPhase = phaseTwo();
-    break;
-    case 3:
-      phaseChange = false;
-      phaseChangeLEDState(3);
-      currentPhase = phaseThree();
-    break;
-    case 4:
-      phaseChange = false;
-      phaseChangeLEDState(4);
-      currentPhase = phaseFour();
-    break;
-    case 10:
-      phaseChange = false;
-      phaseChangeLEDState(10);
-      currentPhase = completion();
-    break;
-    default:
-      error();
-    break;
+  // switch(currentPhase)
+  // {
+  //   case 0:
+  //     reset();
+  //     lastResponse = millis();
+  //     phaseChange = false;
+  //     phaseChangeLEDState(0);
+  //     currentPhase = phaseZero();
+  //   break;
+  //   case 1:
+  //     phaseChange = false;
+  //     phaseChangeLEDState(1);
+  //     currentPhase = phaseOne();
+  //   break;
+  //   case 2:
+  //     phaseChange = false;
+  //     phaseChangeLEDState(2);
+  //     currentPhase = phaseTwo();
+  //   break;
+  //   case 3:
+  //     phaseChange = false;
+  //     phaseChangeLEDState(3);
+  //     currentPhase = phaseThree();
+  //   break;
+  //   case 4:
+  //     phaseChange = false;
+  //     phaseChangeLEDState(4);
+  //     currentPhase = phaseFour();
+  //   break;
+  //   case 10:
+  //     phaseChange = false;
+  //     phaseChangeLEDState(10);
+  //     currentPhase = completion();
+  //   break;
+  //   default:
+  //     error();
+  //   break;
     
-  }
+  // }
   
 }

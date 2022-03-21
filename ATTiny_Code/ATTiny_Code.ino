@@ -54,7 +54,7 @@
 #define DP   16
 
 // define array of presets to scroll through
-byte presets[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE};
+byte presets[15] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE, A, C, H, Z};
 
 // define order of annodes tied to their I/O that needs to be multiplexed
 const byte scan[6] = {D1, D2, D3, D4, D5, D6};

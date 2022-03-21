@@ -37,7 +37,7 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J9---------//
-#define MOTOR_PIN 23
+#define MOTOR_PIN 8
 #define DIRPIN 25
 #define STEPPIN 27
 #define ENPIN 22
@@ -47,8 +47,8 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J1---------//
-#define P1LEDPIN 21
-#define P2LEDPIN 20
+#define P1LEDPIN 28
+#define P2LEDPIN 26
 #define P3LEDPIN 17
 #define P4LEDPIN 16
 #define COALLEDPIN 15
@@ -57,7 +57,7 @@
 #define STEAMLEDPIN 5
 #define CONFIRMBUTTONLEDPIN 6
 #define SENDPOWERBUTTONLEDPIN 7
-#define MAINSWITCHLEDPIN 8
+#define MAINSWITCHLEDPIN 23
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J6---------//
@@ -72,8 +72,8 @@
 
 //--------J41--------//
 // 5V
-// 0
-// 1
+// 20
+// 21
 // GND
 // NC
 //^^^^^^^^^^^^^^^^^^^//
@@ -99,7 +99,7 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J29--------//
-#define RESETSWITCHPIN 34
+#define RESETSWITCHPIN 43
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
