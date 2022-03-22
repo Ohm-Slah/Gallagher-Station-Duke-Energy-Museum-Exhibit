@@ -249,7 +249,7 @@ class AudioPlaybackFromSDCard
             if (!SD.begin(SDCSPIN))
             {
                 Serial.println("NO SD CARD");
-                error();
+                //error();
             }
             root = SD.open("/");      // open SD card main root
             tmrpcm.setVolume(4);    //   0 to 7. Set volume level

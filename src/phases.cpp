@@ -91,6 +91,8 @@ void initialization()
   Serial.begin(9600);
   delay(100);
 
+  Serial.println("HOME STEPPER");
+
   Synchroscope.homeStepper();
 
   if (!serialResponse("RESPOND")) error();
