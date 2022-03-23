@@ -13,6 +13,8 @@
  * https://github.com/Ohm-Slah/Gallagher-Station-Duke-Energy-Museum-Exhibit
  */
 
+#include <Wire.h>
+
 // Define CPU clockspeed
 #define F_CPU 8000000UL
 
@@ -49,9 +51,9 @@
 #define SegC 11
 #define SegD 12
 #define SegE 13
-#define SegF 14
+#define SegF 1  //14
 #define SegG 15
-#define DP   16
+#define DP   0  //16
 
 // define array of presets to scroll through
 byte presets[15] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE, A, C, H, Z};
@@ -66,9 +68,8 @@ char data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
 
 void setup()  //only runs once at startup.
 {
-  // basic initialization
-  Serial.begin(9600);
-  Serial.setTimeout(5);
+  Wire.begin(4);                // join i2c bus with address #4
+  Wire.onReceive(receiveEvent); // register event
   
   for(int i=2; i<8; i++)
   {
@@ -89,7 +90,7 @@ void loop() //constantly runs repeatedly
   // sweep trough the annodes with data array 1ms between each
   scanAnodes(1);
   // check serial port for incoming data, replace current data if any
-  getSerial();
+  //getSerial();
 }
 
 void scanAnodes(uint16_t del)
@@ -110,19 +111,31 @@ void scanAnodes(uint16_t del)
   }
 }
 
-void getSerial()
+void receiveEvent(int howMany)
 {
-  // checks for serial data at buffer, replaces current data array with new data
-
-  char buff[6];
+  int j = 0;
   
-  if(Serial.available())
+  while(1 < Wire.available() && j < 6) // loop through all but the last
   {
-    //for(int i=0; i<6; i++) data[i] = NONE;
-    uint8_t len = Serial.readBytesUntil(0x0A, data, 6);
-
-    for(int i=len; i<6; i++) data[i] = NONE;
-
-    Serial.readBytes(buff, 100);
+    data[j] = Wire.read(); // receive byte as a character
+    j++;
   }
+  int x = Wire.read();    // receive byte as an integer
 }
+
+//void getSerial()
+//{
+//  // checks for serial data at buffer, replaces current data array with new data
+//
+//  char buff[6];
+//  
+//  if(Serial.available())
+//  {
+//    //for(int i=0; i<6; i++) data[i] = NONE;
+//    uint8_t len = Serial.readBytesUntil(0x0A, data, 6);
+//
+//    for(int i=len; i<6; i++) data[i] = NONE;
+//
+//    Serial.readBytes(buff, 100);
+//  }
+//}

@@ -32,12 +32,12 @@
 #define ENCODER3BPIN 2
 // GND
 #define ENCODER4APIN 12
-#define ENCODER4BPIN 3
+#define ENCODER4BPIN 43
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J9---------//
-#define MOTOR_PIN 8
+#define MOTOR_PIN 7
 #define DIRPIN 25
 #define STEPPIN 27
 #define ENPIN 22
@@ -47,25 +47,25 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J1---------//
-#define P1LEDPIN 28
-#define P2LEDPIN 26
+#define P1LEDPIN 26
+#define P2LEDPIN 28
 #define P3LEDPIN 17
 #define P4LEDPIN 16
-#define COALLEDPIN 15
-#define AIRLEDPIN 14
-#define VOLTAGELEDPIN 4
-#define STEAMLEDPIN 5
+#define COALLEDPIN 15//
+#define AIRLEDPIN 4
+#define VOLTAGELEDPIN 14
+#define STEAMLEDPIN 5//
 #define CONFIRMBUTTONLEDPIN 6
-#define SENDPOWERBUTTONLEDPIN 7
-#define MAINSWITCHLEDPIN 23
+#define SENDPOWERBUTTONLEDPIN 23
+#define MAINSWITCHLEDPIN 8
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J6---------//
 // 5V
-#define TEMPERATURESERVOPIN 44
+#define TEMPERATURESERVOPIN 45
 // GND
 // 5V
-#define VOLTAGESERVOPIN 45
+#define VOLTAGESERVOPIN 44
 // GND
 // NC
 //^^^^^^^^^^^^^^^^^^^//
@@ -94,12 +94,12 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J49--------//
-#define PHONESWITCHPIN 16
+#define PHONESWITCHPIN 39
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J29--------//
-#define RESETSWITCHPIN 43
+#define RESETSWITCHPIN 3
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
@@ -109,7 +109,7 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J33--------//
-#define CONFIRMBUTTONPIN 35
+#define CONFIRMBUTTONPIN 42
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
@@ -140,6 +140,8 @@
 // Library that allows controlling the blinking of multiple LEDs with minimal interaction
 #include "TimedBlink.h"
 
+#include <Wire.h>
+
 //^^^^^^End of Block^^^^^^^^^^//
 
 
@@ -167,6 +169,7 @@ byte completion();
 void sleep();
 void error();
 void reset();
+void sendEvent(uint16_t data);
 
 void updateLEDS();
 void phaseChangeLEDState(uint8_t phase);
@@ -244,16 +247,16 @@ class AudioPlaybackFromSDCard
 
         AudioPlaybackFromSDCard()
         {
-            tmrpcm.speakerPin = AUDIOPIN;
-            tmrpcm.disable();
-            if (!SD.begin(SDCSPIN))
-            {
-                Serial.println("NO SD CARD");
-                //error();
-            }
-            root = SD.open("/");      // open SD card main root
-            tmrpcm.setVolume(4);    //   0 to 7. Set volume level
-            tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
+            // tmrpcm.speakerPin = AUDIOPIN;
+            // tmrpcm.disable();
+            // if (!SD.begin(SDCSPIN))
+            // {
+            //     Serial.println("NO SD CARD");
+            //     //error();
+            // }
+            // root = SD.open("/");      // open SD card main root
+            // tmrpcm.setVolume(4);    //   0 to 7. Set volume level
+            // tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
         }
 
         void playFailureAudio()

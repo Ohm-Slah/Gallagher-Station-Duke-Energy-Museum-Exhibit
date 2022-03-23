@@ -15,6 +15,7 @@ import psutil                   # library for retrieving information on running 
 import serial                   # library for basic serial communication
 import time                     # library for a delay
 
+
 # link phase videos file location to variables
 deepsleep = "/home/pi/Desktop/main/data/DEEPSLEEP.mov"
 phasezero = "/home/pi/Desktop/main/data/PHASE0.mov"

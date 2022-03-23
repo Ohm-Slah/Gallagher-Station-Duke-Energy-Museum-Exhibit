@@ -109,5 +109,5 @@ void TimedBlink::blinkDelay(int d)
  */
 void TimedBlink::blinkOff() {
   reset();
-  digitalWrite(m_pin, HIGH);
+  digitalWrite(m_pin, LOW);
 }

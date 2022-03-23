@@ -28,9 +28,9 @@ volatile long long lastResponse = 0;
 
 // Create an Encoder instances, using 2 pins each.
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
-Encoder Coal(ENCODER2APIN, ENCODER2BPIN); 
-Encoder Voltage(ENCODER3APIN, ENCODER3BPIN);
-Encoder Govenor(ENCODER4APIN, ENCODER4BPIN);
+Encoder Coal(ENCODER4APIN, ENCODER4BPIN); 
+Encoder Voltage(ENCODER2APIN, ENCODER2BPIN);
+Encoder Govenor(ENCODER3APIN, ENCODER3BPIN);
 
 // Create LED blinking instances tied to their pinout that can be modified individually with minimal interaction
 TimedBlink RedLED1(P1LEDPIN);
@@ -87,13 +87,13 @@ void initialization()
 
   lastResponse = millis();
 
+
+
   sei();
   Serial.begin(9600);
   delay(100);
 
-  Serial.println("HOME STEPPER");
-
-  Synchroscope.homeStepper();
+  // ! Synchroscope.homeStepper();
 
   if (!serialResponse("RESPOND")) error();
 
@@ -105,8 +105,8 @@ void reset()
    * This function can be ran when all items on board need to be reset
    */
   
-  Synchroscope.homeStepper();
-  phaseChangeLEDState(0);
+  //!Synchroscope.homeStepper();
+  //phaseChangeLEDState(0);
 
   Air.write(1);
   Coal.write(1);
@@ -118,8 +118,17 @@ void reset()
   setDCMotor(0);
 
   // clear 7-segment display
-  Serial.print("NNNNNN");
+  //!Serial.print("NNNNNN");
   
+}
+
+// function that executes whenever data is received from master
+// this function is registered as an event, see setup()
+void sendEvent(uint16_t data)
+{
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(data);              // sends one byte  
+  Wire.endTransmission();    // stop transmitting
 }
 
 void deepSleep()
@@ -148,10 +157,10 @@ byte phaseZero()
   while (!phaseChange) 
   {
     updateLEDS();
-    if (lastResponse + SLEEPTIME < millis()) 
-    {
-      deepSleep();
-    }
+    // !if (lastResponse + SLEEPTIME < millis()) 
+    // !{
+    // !  deepSleep();
+    // !}
   }
   return 1;
 }
@@ -190,6 +199,8 @@ byte phaseOne()
   // Make sure everything is at an off state while the intro plays
   reset();
 
+  //sendEvent(123456);
+
   // initialize variables for finding tempLine
   int8_t coalRead = 0;
   int8_t airRead = 0;
@@ -207,6 +218,7 @@ byte phaseOne()
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
   while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(500);
 
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
@@ -214,6 +226,15 @@ byte phaseOne()
   
   // Begin phase 1 video.
   if (!serialResponse("PHASE ONE INTRO")) error();
+
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(500);
+
+  if (!serialResponse("PHASE ONE LOOP")) error();
+
+  phaseChange = false;
 
   // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -249,7 +270,7 @@ byte phaseOne()
     if (coalRead)
     {
       lastResponse = millis();
-      coalAngle += coalRead;
+      coalAngle += coalRead*2;
       Coal.write(0);
       if (coalAngle > 70)
         coalAngle = 70;
@@ -264,7 +285,7 @@ byte phaseOne()
     if (airRead)
     {
       lastResponse = millis();
-      airAngle += airRead;
+      airAngle += airRead*2;
       Air.write(0);
       if (airAngle > 70)
         airAngle = 70;
@@ -281,17 +302,19 @@ byte phaseOne()
     // the value 1374 was found through trial and error.
     analogWrite(TEMPERATURESERVOPIN, map((int)tempLine, 0, 1374, 255, 0));
     delay(5);
+    // Serial.println(tempLine); // uncomment for debugging
+    // Serial.println(map((int)tempLine, 0, 1374, 255, 0)); // uncomment for debugging
   }
-
+  delay(1000);
   
-  //Serial.println(tempLine); // uncomment for debugging
+  
 
   // if tempLine is within arbitrary error margins, move on to phaseTwo().
   // otherwise, move to failure state
-  uint8_t tempTolerance = 50;
-  uint8_t balanceTolerance = 6;
-  uint16_t idealtempLine = 970;
-  uint8_t idealServoPosistion = 79;
+  uint8_t tempTolerance = 75;
+  uint8_t balanceTolerance = 10;
+  uint16_t idealtempLine = 785;
+  uint8_t idealServoPosistion = 110;
 
   if ((tempLine - idealtempLine) < tempTolerance) // checks if too high
   {
@@ -311,7 +334,6 @@ byte phaseOne()
   }
   failure(1, 1);
   return 1;
-
 }
 
 byte phaseTwo()
@@ -335,7 +357,12 @@ byte phaseTwo()
   */
 
   // begin phase 2 video.
-  if (!serialResponse("PHASE TWO")) error();
+  if (!serialResponse("PHASE TWO INTRO")) error();
+
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(500);
   
   // reset govenor encoder simulated position
   Govenor.write(0);
@@ -344,6 +371,8 @@ byte phaseTwo()
   int16_t steamRead = 0;
   int16_t steam = 23;
   setDCMotor(23);
+
+  if (!serialResponse("PHASE TWO LOOP")) error();
 
   // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -367,15 +396,16 @@ byte phaseTwo()
       steam += steamRead;
       Govenor.write(0);
 
-      if (steam > 75)
-        steam = 75;
+      if (steam > 210)
+        steam = 210;
       else if (steam < 23)
         steam = 23;
 
       setDCMotor(steam);
+      //Serial.println(steam);
 
       // ! This line must be tested to find appropriate values to display on 7-segment
-      Serial.print((char) map(steam, 0, 1, 0, 1));
+      //Serial.print((char) map(steam, 0, 1, 0, 1));
       
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
@@ -384,15 +414,16 @@ byte phaseTwo()
     steamRead = encoderRead('G');
   }
 
+  delay(1000);
   //Serial.println(steam);  //uncomment this line for serial debugging
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
-  if (steam - 67 < 3)
+  if (steam - 184 < 3)
   {
-    if ((steam - 67) > -3)
+    if ((steam - 184) > -3)
     {
-      setDCMotor(64);
+      setDCMotor(184);
       return 3;
     }
     failure(2, 2);
@@ -425,7 +456,12 @@ byte phaseThree()
   */
 
   // begin phase 3 video.
-  if (!serialResponse("PHASE THREE")) error();
+  if (!serialResponse("PHASE THREE INTRO")) error();
+
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(500);
 
   // reset voltage encoder simulated position
   Voltage.write(0);
@@ -433,6 +469,8 @@ byte phaseThree()
   // initialize temporary variables
   int16_t voltageRead = 0;
   int16_t voltage = 0;
+
+  if (!serialResponse("PHASE THREE LOOP")) error();
 
   // loop until confirm button is pressed
   while (digitalRead(CONFIRMBUTTONPIN))
@@ -456,7 +494,7 @@ byte phaseThree()
     if (voltageRead)
     {
       lastResponse = millis();
-      voltage += voltageRead;
+      voltage += voltageRead*2;
       Voltage.write(0);
 
       if (voltage > 255)
@@ -465,7 +503,7 @@ byte phaseThree()
         voltage = 0;
 
       // ! This line must be tested to find appropriate values to display on 7-segment
-      Serial.print((char) map(voltage, 0, 1, 0, 1));
+      Serial.println(voltage);
 
       // ! This line must be tested to find appropriate values to display through servo
       analogWrite(VOLTAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
@@ -476,9 +514,9 @@ byte phaseThree()
 
   // ! This code below must be tested to find actual error margins //
   // !-------------------------Start of Block----------------------//
-  if (abs(voltage - 0) < 1)  
+  if (abs(voltage - 208) < 5)  
   {
-    if ((voltage - 0) > -1)
+    if ((voltage - 208) > -5)
     {
       return 4; // begin phase 4
     }
@@ -509,9 +547,18 @@ byte phaseFour()
   */
 
   // begin phase 4 video.
-  if (!serialResponse("PHASE FOUR")) error();
+  if (!serialResponse("PHASE FOUR INTRO")) error();
+
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(500);
+
+  if (!serialResponse("PHASE FOUR LOOP")) error();
 
   Synchroscope.homeStepper();
+
+  Serial.println("Stepper Homed");
   
   // loop until confirm button is pressed
   while (digitalRead(SENDPOWERBUTTONPIN))
@@ -560,6 +607,10 @@ bool serialResponse(char com[])
    * "COMPLETE" "SLEEP"
   */
   uint8_t attempts = 0;
+  // !
+  Serial.println(com);
+  return true;
+  // !
 
   delay(1000);
   while (attempts <= 5)
@@ -569,7 +620,8 @@ bool serialResponse(char com[])
     if (Serial.available())
     {
       char val = Serial.read();
-      //Serial.println(val);
+      Serial.print("GOT: ");
+      Serial.println(val);
       if (val == '1')
       {
         return true;
@@ -593,12 +645,14 @@ bool serialWait()
 
   if(Serial.available())
   {
+    Serial.println("WAIT");
     char val = Serial.read();
-    if (val == '1') 
+    if (val == '2') 
       return true;
-    else error();
-  } 
-  else return false;
+    else if(val=='0')
+      return false;
+  }
+  return false;
 }
 
 void failure(uint8_t phase, uint8_t failureReason)
@@ -721,8 +775,11 @@ void resetPhases()
   /*
    * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
   */
+  cli();
+  Serial.println("EVENT");
   phaseChange = true;
   currentPhase = 1;
+  sei();
 }
 
 void updateLEDS()
@@ -741,6 +798,7 @@ void updateLEDS()
   AIRLED.blink();
   VOLTAGELED.blink();
   STEAMLED.blink();
+  //Serial.println("LED STATE UPDATE");
 }
 
 void phaseChangeLEDState(uint8_t phase)
@@ -751,7 +809,6 @@ void phaseChangeLEDState(uint8_t phase)
   switch (phase)
   {
     case 0:
-    {
       RedLED1.blinkOff();
       RedLED2.blinkOff();
       RedLED3.blinkOff();
@@ -763,9 +820,9 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();
       STEAMLED.blinkOff();
-    }
+      //Serial.println("PHASE 0 LIGHTS");
+    break;
     case 1:
-    {
       RedLED1.blink(500, 500);
       RedLED2.blinkOff();
       RedLED3.blinkOff();
@@ -777,9 +834,9 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blink(250, 250);
       VOLTAGELED.blinkOff();
       STEAMLED.blinkOff();
-    }
+      //Serial.println("PHASE 1 LIGHTS");
+      break;
     case 2:
-    {
       RedLED1.blinkOff(); 
       RedLED2.blink(500, 500);
       RedLED3.blinkOff();
@@ -791,9 +848,8 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();
       STEAMLED.blink(250, 250);
-    }
+    break;
     case 3:
-    {
       RedLED1.blinkOff(); 
       RedLED2.blinkOff(); 
       RedLED3.blink(500, 500);
@@ -805,9 +861,8 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blinkOff();
       VOLTAGELED.blink(250, 250);
       STEAMLED.blinkOff();
-    }
+    break;
     case 4:
-    {
       RedLED1.blinkOff(); 
       RedLED2.blinkOff();
       RedLED3.blinkOff(); 
@@ -819,9 +874,8 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();
       STEAMLED.blinkOff();
-    }
+    break;
     case 10:  //phase 'complete'
-    {
       RedLED1.blinkOff();
       RedLED2.blinkOff();
       RedLED3.blinkOff(); 
@@ -833,7 +887,7 @@ void phaseChangeLEDState(uint8_t phase)
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();
       STEAMLED.blinkOff();
-    }
+    break;
   }
 }
 
@@ -860,7 +914,7 @@ int8_t encoderRead(char enc)
 void setDCMotor(uint16_t pwmValue)
 {
   /*
-   * This fuction recieves an integer value and runs the DC motor at that PWM at 1024 precision.
+   * This fuction recieves an integer value and runs the DC motor at that PWM at 255 precision.
   */
   analogWrite(MOTOR_PIN, pwmValue);
 }

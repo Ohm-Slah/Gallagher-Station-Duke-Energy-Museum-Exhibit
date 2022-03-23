@@ -13,11 +13,11 @@
  */
 
 #include "phases.h"
-#include <Arduino.h>
+//#include <Arduino.h>
 void setup() 
 {
-  // Serial.begin(9600);
-  // while(1) Serial.println("TEST");
+  //Serial.begin(9600);
+  //while(1) Serial.println("TEST");
   initialization();
   
 }
