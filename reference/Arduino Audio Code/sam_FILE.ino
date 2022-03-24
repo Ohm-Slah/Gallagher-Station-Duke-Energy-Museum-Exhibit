@@ -8,7 +8,8 @@
 #include <SD.h>      // include Arduino SD library
 #include "TMRpcm.h"  // include TMRpcm library
 
-
+#define next     2
+#define _pause   3
 
 TMRpcm audio;
 
@@ -16,7 +17,8 @@ File root;
 
 void setup(void) {
   Serial.begin(9600);
-  
+  pinMode(next,   INPUT_PULLUP);
+  pinMode(_pause, INPUT_PULLUP);
 
   Serial.print("Initializing SD card...");
   if (!SD.begin()) {
@@ -28,6 +30,7 @@ void setup(void) {
   audio.speakerPin = 46;  // set speaker output to pin 9
 
   root = SD.open("/");      // open SD card main root
+  printDirectory(root, 0);  // print all files names and sizes
 
   audio.setVolume(4);    //   0 to 7. Set volume level
   audio.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
@@ -62,6 +65,19 @@ void loop() {
       return;
     }
 
+    while( debounce(next) ) ;  // wait until 'next' button is released
+  }
+
+  if ( !digitalRead(next) ) {
+    // 'next' button is pressed
+    audio.stopPlayback();  // stop playing
+    return;
+  }
+
+  if ( !digitalRead(_pause) ) {
+    // '_pause' button is pressed
+    audio.pause();      // pauses/unpauses playback
+    while( debounce(_pause) ) ;  // wait until '_pause' button is released
   }
 
 }
@@ -81,5 +97,28 @@ bool debounce (int bt)
   else           return 0;
 }
 
+void printDirectory(File dir, int numTabs) {
+  while (true) {
+
+    File entry =  dir.openNextFile();
+    if (! entry) {
+      // no more files
+      break;
+    }
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print('\t');
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    } else {
+      // files have sizes, directories do not
+      Serial.print("\t\t");
+      Serial.println(entry.size(), DEC);
+    }
+    entry.close();
+  }
+}
 
 // end of code.
