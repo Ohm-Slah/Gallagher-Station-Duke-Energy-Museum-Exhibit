@@ -51,10 +51,10 @@
 #define P2LEDPIN 28
 #define P3LEDPIN 17
 #define P4LEDPIN 16
-#define COALLEDPIN 15//
+#define COALLEDPIN 15
 #define AIRLEDPIN 4
 #define VOLTAGELEDPIN 14
-#define STEAMLEDPIN 5//
+#define STEAMLEDPIN 5
 #define CONFIRMBUTTONLEDPIN 6
 #define SENDPOWERBUTTONLEDPIN 23
 #define MAINSWITCHLEDPIN 8
@@ -78,7 +78,7 @@
 // NC
 //^^^^^^^^^^^^^^^^^^^//
 
-//--------J48--------//
+//--------J47--------//
 // 5V
 // GND
 //^^^^^^^^^^^^^^^^^^^//
@@ -88,27 +88,27 @@
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
-//--------J35--------//
+//--------J29--------//
 #define SENDPOWERBUTTONPIN 40
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
-//--------J49--------//
+//--------J27--------//
 #define PHONESWITCHPIN 39
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
-//--------J29--------//
+//!--------J29--------//
 #define RESETSWITCHPIN 3
 // GND
-//^^^^^^^^^^^^^^^^^^^//
+//!^^^^^^^^^^^^^^^^^^^//
 
-//--------J31--------//
-#define LIGHTBULBSWITCHPIN 15
+//--------J33--------//
+#define LIGHTBULBSWITCHPIN 43
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
-//--------J33--------//
+//--------J48--------//
 #define CONFIRMBUTTONPIN 42
 // GND
 //^^^^^^^^^^^^^^^^^^^//
