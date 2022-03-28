@@ -276,6 +276,7 @@ byte phaseOne()
         coalAngle = 70;
       else if (coalAngle < 0)
         coalAngle = 0;
+        Serial.println(coalAngle);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -291,6 +292,7 @@ byte phaseOne()
         airAngle = 70;
       else if (airAngle < 0)
         airAngle = 0;
+        //Serial.println(airAngle);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -558,11 +560,17 @@ byte phaseFour()
 
   Synchroscope.homeStepper();
 
+  lastResponse = millis();
+
   Serial.println("Stepper Homed");
+  delay(500);
   
+  phaseChange = false;
+
   // loop until confirm button is pressed
   while (digitalRead(SENDPOWERBUTTONPIN))
   {
+    //Serial.print("PHASE 4 LOOP");
     // phaseChange set in interrupt service routine @ resetPhases() 
     // ISR called when knife-switch (reset) state is changed
     if (phaseChange) return 1;
@@ -576,6 +584,11 @@ byte phaseFour()
     Synchroscope.singleStep(true);
     delay(25); // ! this delay will need to be adjusted to change difficulty
   }
+
+  lastResponse = millis();
+
+  //! 
+  return 10;
 
   // ! This code below must be tested to find actual error margins //
   // !-------------------------Start of Block----------------------//
@@ -749,8 +762,10 @@ byte completion()
    * This function is the completion state of the display.
   */
   if (!serialResponse("COMPLETE")) error();
+  digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
   phaseChangeLEDState(10);
   delay(7500);
+  digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   return 0;
 }
 

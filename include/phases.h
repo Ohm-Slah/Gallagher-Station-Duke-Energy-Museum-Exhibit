@@ -89,7 +89,7 @@
 //^^^^^^^^^^^^^^^^^^^//
 
 //--------J29--------//
-#define SENDPOWERBUTTONPIN 40
+#define SENDPOWERBUTTONPIN 41
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
@@ -104,7 +104,7 @@
 //!^^^^^^^^^^^^^^^^^^^//
 
 //--------J33--------//
-#define LIGHTBULBSWITCHPIN 43
+#define LIGHTBULBSWITCHPIN 40
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
@@ -219,10 +219,11 @@ class Stepper
             digitalWrite(ENPIN, LOW);
 
             // rotate stepper motor until the homing switch is triggered.
-            while (!digitalRead(HOMEPIN))
+            while (digitalRead(HOMEPIN))
             {
                 singleStep(true);
                 delay(4);
+                Serial.println(digitalRead(HOMEPIN));
             }
             stepperPosition = 0;
         }
