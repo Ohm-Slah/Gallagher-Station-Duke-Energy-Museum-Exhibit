@@ -27,11 +27,11 @@ void loop()
   switch(currentPhase)
   {
     case 0:
-      reset();
       lastResponse = millis();
       phaseChange = false;
       phaseChangeLEDState(0);
       currentPhase = phaseZero();
+      intro();
     break;
     case 1:
       phaseChange = false;

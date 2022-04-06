@@ -32,7 +32,7 @@ void setup(void) {
   root = SD.open("/");      // open SD card main root
   printDirectory(root, 0);  // print all files names and sizes
 
-  audio.setVolume(4);    //   0 to 7. Set volume level
+  audio.setVolume(6);    //   0 to 7. Set volume level
   audio.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
 
 }

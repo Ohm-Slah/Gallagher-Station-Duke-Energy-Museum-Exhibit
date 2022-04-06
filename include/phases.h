@@ -16,7 +16,6 @@
 #define WAITTIME 30000
 #define SLEEPTIME 10800000
 
-
 //define all of the pins used with particular names for identification //
 //in order of junctions from the custom PCB                            //
 //------------------------Start of Block-------------------------------//
@@ -162,6 +161,7 @@ byte phaseTwo();
 byte phaseThree();
 byte phaseFour();
 
+void intro();
 bool serialResponse(char com[]);
 bool serialWait();
 void failure(uint8_t phase, uint8_t failureReason);
@@ -179,7 +179,6 @@ int8_t encoderRead(char enc);
 void setDCMotor(uint16_t pwmValue);
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
-
 
 // Class for the use of a stepper motor. This is technically not necessary,
 // but it makes all code for the stepper motor centralized and more readable.
@@ -223,7 +222,7 @@ class Stepper
             {
                 singleStep(true);
                 delay(4);
-                Serial.println(digitalRead(HOMEPIN));
+                //Serial.println(digitalRead(HOMEPIN));
             }
             stepperPosition = 0;
         }
@@ -242,22 +241,30 @@ class Stepper
 // but it makes all code for the phone centralized and more readable.
 class AudioPlaybackFromSDCard
 {
+    TMRpcm tmrpcm; //create instance for sd card reading
+    File root;
     public:
-        TMRpcm tmrpcm; //create instance for sd card reading
-        File root;
-
         AudioPlaybackFromSDCard()
         {
-            // tmrpcm.speakerPin = AUDIOPIN;
-            // tmrpcm.disable();
+            Serial.begin(9600);
+            Serial.println("1");
+            //tmrpcm.speakerPin = AUDIOPIN;
+            Serial.println("2");
+            //tmrpcm.disable();
+            Serial.println("3");
             // if (!SD.begin(SDCSPIN))
             // {
+            //     Serial.println("4");
             //     Serial.println("NO SD CARD");
             //     //error();
             // }
-            // root = SD.open("/");      // open SD card main root
-            // tmrpcm.setVolume(4);    //   0 to 7. Set volume level
-            // tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
+            Serial.println("5");
+            //root = SD.open("/");      // open SD card main root
+            Serial.println("6");
+            //tmrpcm.setVolume(4);    //   0 to 7. Set volume level
+            Serial.println("7");
+            //tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
+            Serial.println("8");
         }
 
         void playFailureAudio()
