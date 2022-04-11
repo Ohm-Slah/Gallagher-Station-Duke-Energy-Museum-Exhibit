@@ -107,7 +107,7 @@ void reset()
   
   //!Synchroscope.homeStepper();
   //phaseChangeLEDState(0);
-
+  //Serial.println("RESET");
   Air.write(1);
   Coal.write(1);
 
@@ -143,6 +143,22 @@ void deepSleep()
   while (!phaseChange) updateLEDS();
 }
 
+void intro()
+{
+  // Begin introduction video
+  if (!serialResponse("INTROS")) error();
+
+  // Make sure everything is at an off state while the intro plays
+  reset();
+
+  // Wait until intro video is finished playing, or until confirm button
+  // is pressed. This action will skip the intro video.
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  delay(100);
+  while(!digitalRead(CONFIRMBUTTONPIN));
+  delay(100);
+}
+
 byte phaseZero()
 {
   /*
@@ -154,7 +170,7 @@ byte phaseZero()
   if (!serialResponse("PHASE ZERO")) error();
   Synchroscope.disable();
 
-  while (!phaseChange) 
+  while (!phaseChange)
   {
     updateLEDS();
     // !if (lastResponse + SLEEPTIME < millis()) 
@@ -193,12 +209,6 @@ byte phaseOne()
    * 
   */
 
-  // Begin introduction video
-  if (!serialResponse("INTRO")) error();
-
-  // Make sure everything is at an off state while the intro plays
-  reset();
-
   //sendEvent(123456);
 
   // initialize variables for finding tempLine
@@ -215,11 +225,6 @@ byte phaseOne()
   bool dir = false;  //0=left & 1=right
   uint8_t count = 0;
 
-  // Wait until intro video is finished playing, or until confirm button
-  // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
-  delay(500);
-
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
   lastResponse = millis();
@@ -229,8 +234,16 @@ byte phaseOne()
 
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
-  delay(500);
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
+    updateLEDS();
+    if (phaseChange) return 1;
+  }
+  
+  delay(100);
+  while(!digitalRead(CONFIRMBUTTONPIN));
+  delay(100);
+
+  lastResponse = millis();
 
   if (!serialResponse("PHASE ONE LOOP")) error();
 
@@ -276,7 +289,7 @@ byte phaseOne()
         coalAngle = 70;
       else if (coalAngle < 0)
         coalAngle = 0;
-        Serial.println(coalAngle);
+      // Serial.println(coalAngle);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -292,7 +305,7 @@ byte phaseOne()
         airAngle = 70;
       else if (airAngle < 0)
         airAngle = 0;
-        //Serial.println(airAngle);
+      // Serial.println(airAngle);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -307,7 +320,7 @@ byte phaseOne()
     // Serial.println(tempLine); // uncomment for debugging
     // Serial.println(map((int)tempLine, 0, 1374, 255, 0)); // uncomment for debugging
   }
-  delay(1000);
+  delay(100);
   
   
 
@@ -363,7 +376,10 @@ byte phaseTwo()
 
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
+    updateLEDS();
+    if (phaseChange) return 1;
+  }
   delay(500);
   
   // reset govenor encoder simulated position
@@ -612,7 +628,7 @@ bool serialResponse(char com[])
    * This function takes a predefined string command and confirms a serial 
    * response from a Raspberry Pi running a python sketch.
    * Predefined commands: 
-   * "RESPOND" "INTRO" "PHASE ZERO" "DEEP SLEEP"
+   * "RESPOND" "INTROS" "PHASE ZERO" "DEEP SLEEP"
    * "PHASE ONE INTRO" "PHASE ONE LOOP" "PHASE ONE FAIL HIGH" "PHASE ONE FAIL LOW"
    * "PHASE TWO INTRO" "PHASE TWO LOOP" "PHASE TWO FAIL HIGH" "PHASE TWO FAIL LOW"
    * "PHASE THREE INTRO" "PHASE THREE LOOP" "PHASE THREE FAIL HIGH" "PHASE THREE FAIL LOW"
@@ -620,22 +636,89 @@ bool serialResponse(char com[])
    * "COMPLETE" "SLEEP"
   */
   uint8_t attempts = 0;
-  // !
-  Serial.println(com);
-  return true;
-  // !
+  // // !
+  // Serial.println(com);
+  // return true;
+  // // !
 
-  delay(1000);
+  delay(100);
   while (attempts <= 5)
   {
     updateLEDS();
     Serial.println(com);
+    delay(200);
     if (Serial.available())
     {
       char val = Serial.read();
-      Serial.print("GOT: ");
-      Serial.println(val);
-      if (val == '1')
+      // Serial.print("GOT: ");
+      // Serial.println(val);
+      if (val == '1' && com == "RESPOND")
+      {
+        return true;
+      } else if (val == '2' && com == "INTROS") 
+      {
+        return true;
+      } else if (val == '3' && com == "PHASE ZERO") 
+      {
+        return true;
+      } else if (val == '4' && com == "DEEP SLEEP") 
+      {
+        return true;
+      } else if (val == '5' && com == "PHASE ONE INTRO") 
+      {
+        return true;
+      } else if (val == '6' && com == "PHASE ONE LOOP") 
+      {
+        return true;
+      } else if (val == '7' && com == "PHASE ONE FAIL HIGH") 
+      {
+        return true;
+      } else if (val == '8' && com == "PHASE ONE FAIL LOW") 
+      {
+        return true;
+      } else if (val == '9' && com == "PHASE ONE UNBALANCED") 
+      {
+        return true;
+      } else if (val == 'A' && com == "PHASE TWO INTRO") 
+      {
+        return true;
+      } else if (val == 'B' && com == "PHASE TWO LOOP") 
+      {
+        return true;
+      } else if (val == 'C' && com == "PHASE TWO FAIL HIGH") 
+      {
+        return true;
+      } else if (val == 'D' && com == "PHASE TWO FAIL LOW") 
+      {
+        return true;
+      } else if (val == 'E' && com == "PHASE THREE INTRO") 
+      {
+        return true;
+      } else if (val == 'F' && com == "PHASE THREE LOOP") 
+      {
+        return true;
+      } else if (val == 'G' && com == "PHASE THREE FAIL HIGH") 
+      {
+        return true;
+      } else if (val == 'H' && com == "PHASE THREE FAIL LOW") 
+      {
+        return true;
+      } else if (val == 'I' && com == "PHASE FOUR INTRO") 
+      {
+        return true;
+      } else if (val == 'J' && com == "PHASE FOUR LOOP") 
+      {
+        return true;
+      } else if (val == 'K' && com == "PHASE FOUR FAIL HIGH") 
+      {
+        return true;
+      } else if (val == 'L' && com == "PHASE FOUR FAIL LOW") 
+      {
+        return true;
+      } else if (val == 'M' && com == "COMPLETE") 
+      {
+        return true;
+      } else if (val == 'N' && com == "RING") 
       {
         return true;
       } else {
@@ -643,7 +726,7 @@ bool serialResponse(char com[])
         attempts++;
       }
     }
-    delay(2000);
+    delay(1000);
     attempts++;
   }
   return false;
@@ -655,14 +738,14 @@ bool serialWait()
   /*
    * This function will return true if there was anything waiting in the USB serial buffer
   */
-
+//  Serial.print("WAIT ATTEMPT");
   if(Serial.available())
   {
-    Serial.println("WAIT");
+    // Serial.println("WAIT");
     char val = Serial.read();
-    if (val == '2') 
+    if (val == '0') 
       return true;
-    else if(val=='0')
+    else
       return false;
   }
   return false;
@@ -679,7 +762,7 @@ void failure(uint8_t phase, uint8_t failureReason)
    * 2 : Too low failure
    * 3 : Other failure
   */
-  delay(1000);
+  delay(100);
   if (!serialResponse("RING")) error();
   while (!digitalRead(PHONESWITCHPIN)) {
     updateLEDS();
@@ -838,52 +921,52 @@ void phaseChangeLEDState(uint8_t phase)
       //Serial.println("PHASE 0 LIGHTS");
     break;
     case 1:
-      RedLED1.blink(500, 500);
+      RedLED1.blink(800, 200);
       RedLED2.blinkOff();
       RedLED3.blinkOff();
       RedLED4.blinkOff();
-      CONFIRMBUTTONLED.blink(250, 250);
+      CONFIRMBUTTONLED.blink(10000, 1);
       SENDPOWERBUTTONLED.blinkOff();
       MAINSWITCHLED.blink(500, 500);
-      COALLED.blink(250, 250);
-      AIRLED.blink(250, 250);
+      COALLED.blink(10000, 1);
+      AIRLED.blink(10000, 1);
       VOLTAGELED.blinkOff();
       STEAMLED.blinkOff();
       //Serial.println("PHASE 1 LIGHTS");
       break;
     case 2:
       RedLED1.blinkOff(); 
-      RedLED2.blink(500, 500);
+      RedLED2.blink(800, 200);
       RedLED3.blinkOff();
       RedLED4.blinkOff();
-      CONFIRMBUTTONLED.blink(250, 250);
+      CONFIRMBUTTONLED.blink(10000, 1);
       SENDPOWERBUTTONLED.blinkOff();
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
       VOLTAGELED.blinkOff();
-      STEAMLED.blink(250, 250);
+      STEAMLED.blink(10000, 1);
     break;
     case 3:
       RedLED1.blinkOff(); 
       RedLED2.blinkOff(); 
-      RedLED3.blink(500, 500);
+      RedLED3.blink(800, 200);
       RedLED4.blinkOff();
-      CONFIRMBUTTONLED.blink(250, 250);
+      CONFIRMBUTTONLED.blink(10000, 1);
       SENDPOWERBUTTONLED.blinkOff();
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blink(250, 250);
+      VOLTAGELED.blink(10000, 1);
       STEAMLED.blinkOff();
     break;
     case 4:
       RedLED1.blinkOff(); 
       RedLED2.blinkOff();
       RedLED3.blinkOff(); 
-      RedLED4.blink(500,500);
+      RedLED4.blink(800,200);
       CONFIRMBUTTONLED.blinkOff();
-      SENDPOWERBUTTONLED.blink(150, 150);
+      SENDPOWERBUTTONLED.blink(10000, 1);
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
@@ -891,7 +974,7 @@ void phaseChangeLEDState(uint8_t phase)
       STEAMLED.blinkOff();
     break;
     case 10:  //phase 'complete'
-      RedLED1.blinkOff();
+      RedLED1.blink();
       RedLED2.blinkOff();
       RedLED3.blinkOff(); 
       RedLED4.blinkOff();
