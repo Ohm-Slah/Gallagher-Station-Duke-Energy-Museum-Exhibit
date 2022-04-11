@@ -2,6 +2,13 @@
  * Play wave audio files with Arduino.
  * This is a free software with NO WARRANTY.
  * https://simple-circuit.com/
+ * 
+ * CS: PIN 53
+ * SCK: PIN 52
+ * MOSI: PIN 51
+ * MISO: PIN 50
+ * VCC 5V
+ * GND
  */
 
 #include <SPI.h>     // include Arduino SPI library
@@ -27,12 +34,12 @@ void setup(void) {
   }
   Serial.println("OK!");
 
-  audio.speakerPin = 46;  // set speaker output to pin 9
+  audio.speakerPin = 46;  // set speaker output to pin 46
 
   root = SD.open("/");      // open SD card main root
   printDirectory(root, 0);  // print all files names and sizes
 
-  audio.setVolume(4);    //   0 to 7. Set volume level
+  audio.setVolume(5);    //   0 to 7. Set volume level
   audio.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
 
 }
