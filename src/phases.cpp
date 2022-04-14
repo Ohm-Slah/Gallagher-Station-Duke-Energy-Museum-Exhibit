@@ -48,8 +48,10 @@ TimedBlink STEAMLED(STEAMLEDPIN);
 // Create stepper motor instance to control
 Stepper Synchroscope;
 
-// Create audio-from-sd-card instance to control
-AudioPlaybackFromSDCard PhoneSpeaker;
+SevenSegmentDisplay SSDisplay;
+
+TMRpcm audio; //create instance for sd card reading
+File root;
 
 // declare reset function @ address 0
 // basically, calling resetFunc() is equivalent to hitting the reset button on the Arduino
@@ -87,13 +89,33 @@ void initialization()
 
   lastResponse = millis();
 
-
+  // RedLED1.blink(1000,1000);
+  // RedLED2.blink(1000,1000);
+  // RedLED3.blink(1000,1000);
+  // RedLED4.blink(1000,1000);
+  // CONFIRMBUTTONLED.blink(1000,1000);
+  // SENDPOWERBUTTONLED.blink(1000,1000);
+  // MAINSWITCHLED.blink(1000,1000);
+  // COALLED.blink(1000,1000);
+  // AIRLED.blink(1000,1000);
+  // VOLTAGELED.blink(1000,1000);
+  // STEAMLED.blink(1000,1000);
 
   sei();
   Serial.begin(9600);
   delay(100);
+  initSDCard();
 
   // ! Synchroscope.homeStepper();
+  // SSDisplay.display("12.39  ", 0);
+  // delay(1000);
+  // SSDisplay.display("123.4  ", 1);
+  // delay(1000);
+  // SSDisplay.display("9.765  ", 2);
+  // delay(1000);
+  // SSDisplay.display("12.3   ", 0);
+  // delay(1000);
+  SSDisplay.display("      ", 0);
 
   if (!serialResponse("RESPOND")) error();
 
@@ -111,25 +133,25 @@ void reset()
   Air.write(1);
   Coal.write(1);
 
-  PhoneSpeaker.disablePlayback();
+  disablePlayback();
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   
   setDCMotor(0);
 
   // clear 7-segment display
-  //!Serial.print("NNNNNN");
+  SSDisplay.display("      ", 0);
   
 }
 
 // function that executes whenever data is received from master
 // this function is registered as an event, see setup()
-void sendEvent(uint16_t data)
-{
-  Wire.beginTransmission(4); // transmit to device #4
-  Wire.write(data);              // sends one byte  
-  Wire.endTransmission();    // stop transmitting
-}
+// void sendEvent(uint16_t data)
+// {
+//   Wire.beginTransmission(4); // transmit to device #4
+//   Wire.write(data);              // sends one byte  
+//   Wire.endTransmission();    // stop transmitting
+// }
 
 void deepSleep()
 {
@@ -145,15 +167,21 @@ void deepSleep()
 
 void intro()
 {
-  // Begin introduction video
-  if (!serialResponse("INTROS")) error();
+  while(digitalRead(RESETSWITCHPIN));
 
   // Make sure everything is at an off state while the intro plays
   reset();
 
+  // Begin introduction video
+  if (!serialResponse("INTROS")) error();
+  delay(100);
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) updateLEDS();
+  phaseChange = false;
+  while(digitalRead(CONFIRMBUTTONPIN)) {
+    updateLEDS();
+    if (phaseChange) return;
+  } 
   delay(100);
   while(!digitalRead(CONFIRMBUTTONPIN));
   delay(100);
@@ -231,14 +259,14 @@ byte phaseOne()
   
   // Begin phase 1 video.
   if (!serialResponse("PHASE ONE INTRO")) error();
-
+  delay(100);
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
   while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
     updateLEDS();
     if (phaseChange) return 1;
   }
-  
+
   delay(100);
   while(!digitalRead(CONFIRMBUTTONPIN));
   delay(100);
@@ -645,8 +673,7 @@ bool serialResponse(char com[])
   while (attempts <= 5)
   {
     updateLEDS();
-    Serial.println(com);
-    delay(200);
+    delay(500);
     if (Serial.available())
     {
       char val = Serial.read();
@@ -722,10 +749,11 @@ bool serialResponse(char com[])
       {
         return true;
       } else {
-        return false;
+        //return false;
         attempts++;
       }
     }
+    Serial.println(com);
     delay(1000);
     attempts++;
   }
@@ -828,9 +856,8 @@ void failure(uint8_t phase, uint8_t failureReason)
     break;
   }
 
-  PhoneSpeaker.playFailureAudio();
-  delay(5000);
-  PhoneSpeaker.disablePlayback();
+  playFailureAudio();
+  while(audio.isPlaying());
 
   while (digitalRead(PHONESWITCHPIN)) 
   {
@@ -878,6 +905,85 @@ void resetPhases()
   phaseChange = true;
   currentPhase = 1;
   sei();
+}
+
+void initSDCard()
+{
+  Serial.print("Initializing SD card...");
+  if (!SD.begin()) {
+    Serial.println("failed!");
+    while(true);  // stay here.
+  }
+  Serial.println("OK!");
+
+  audio.speakerPin = 46;  // set speaker output to pin 46
+
+  root = SD.open("/");      // open SD card main root
+  printDirectory(root, 0);  // print all files names and sizes
+
+
+  audio.setVolume(5);    //   0 to 7. Set volume level
+
+  audio.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
+
+}
+
+void playFailureAudio()
+{
+  while ( !audio.isPlaying() ) {
+    // no audio file is playing
+    File entry =  root.openNextFile();  // open next file
+    if (! entry) {
+      // no more files
+      root.rewindDirectory();  // go to start of the folder
+      //return;
+    }
+
+    uint8_t nameSize = String(entry.name()).length();  // get file name size
+    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+
+    if ( str1.equalsIgnoreCase(".wav") ) {
+      // the opened file has '.wav' extension
+      audio.play( entry.name() );      // play the audio file
+      Serial.print("Playing file: ");
+      Serial.println( entry.name() );
+    }
+
+    else {
+      // not '.wav' format file
+      entry.close();
+      //return;
+    }
+  }
+}
+
+void printDirectory(File dir, int numTabs) {
+  while (true) {
+
+    File entry =  dir.openNextFile();
+    if (! entry) {
+      // no more files
+      break;
+    }
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print('\t');
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    } else {
+      // files have sizes, directories do not
+      Serial.print("\t\t");
+      Serial.println(entry.size(), DEC);
+    }
+    entry.close();
+  }
+}
+
+void disablePlayback()
+{
+  audio.disable();
 }
 
 void updateLEDS()

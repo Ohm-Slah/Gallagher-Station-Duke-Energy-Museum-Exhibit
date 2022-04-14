@@ -48,8 +48,8 @@
 //--------J1---------//
 #define P1LEDPIN 26
 #define P2LEDPIN 28
-#define P3LEDPIN 17
-#define P4LEDPIN 16
+#define P3LEDPIN 21
+#define P4LEDPIN 20
 #define COALLEDPIN 15
 #define AIRLEDPIN 4
 #define VOLTAGELEDPIN 14
@@ -133,13 +133,11 @@
 // Standard library of Arduino that allows SD card file manipulation
 #include <SD.h>
 // Library that links with SD.h, allows for audio playback through I/O
-#include <TMRpcm.h>   //https://github.com/TMRh20/TMRpcm
+#include "TMRpcm.h"   //https://github.com/TMRh20/TMRpcm
 // Standard Arduino SPI library
 #include <SPI.h>
 // Library that allows controlling the blinking of multiple LEDs with minimal interaction
 #include "TimedBlink.h"
-
-#include <Wire.h>
 
 //^^^^^^End of Block^^^^^^^^^^//
 
@@ -171,6 +169,10 @@ void error();
 void reset();
 void sendEvent(uint16_t data);
 
+void printDirectory(File dir, int numTabs);
+void initSDCard();
+void playFailureAudio();
+void disablePlayback();
 void updateLEDS();
 void phaseChangeLEDState(uint8_t phase);
 void servoMove(uint16_t position);
@@ -236,70 +238,166 @@ class Stepper
         const int stepsPerRevolution = 200;
 };
 
+class SevenSegmentDisplay
+{
+    public:
+        SevenSegmentDisplay()
+        {
+            Serial2.begin(9600);
+        }
+
+        void display(char cStr[], int suffixMode)
+        {
+            //char cStr[7];  //buffer for float to str conversion
+            char outStr[6] = {':',':',':',':',':',':'};
+            byte offset = 0;
+
+            //dtostrf(raw, 1, 1, cStr);   //raw -> cStr 1 dp of precision
+
+            for(int i=0; i<7; i++)
+            {
+                switch(cStr[i])
+                {
+                    case '0': 
+                        outStr[i-offset] = '0';
+                    break;
+                    case '1': 
+                        outStr[i-offset] = '1';
+                    break;
+                    case '2': 
+                        outStr[i-offset] = '2';
+                    break;
+                    case '3': 
+                        outStr[i-offset] = '3';
+                    break;
+                    case '4':
+                        outStr[i-offset] = '4';
+                    break;
+                    case '5': 
+                        outStr[i-offset] = '5';
+                    break;
+                    case '6': 
+                        outStr[i-offset] = '6';
+                    break;
+                    case '7': 
+                        outStr[i-offset] = '7';
+                    break;
+                    case '8': 
+                        outStr[i-offset] = '8';
+                    break;
+                    case '9': 
+                        outStr[i-offset] = '9';
+                    break;
+                    case '.':
+                        offset++;
+                        // convert previous byte to DP equivalent
+                        //Serial.print(cStr[i]);Serial.print(" : ");Serial.println(cStr[i-1]+11);
+                        outStr[i-offset] = (cStr[i-1]+11);
+                    break;
+                    case 'A': 
+                        outStr[i-offset] = 'E';
+                    break;
+                    case 'C': 
+                        outStr[i-offset] = 'F';
+                    break;
+                    case 'H': 
+                        outStr[i-offset] = 'G';
+                    break;
+                    case 'Z':
+                        outStr[i-offset] = 'H';
+                    break;
+                    case ' ':
+                        outStr[i-offset] = ':';
+                    break;
+                }
+                //Serial.println(outStr);
+                if(i-offset==5) break;
+            }
+            if (suffixMode==1)          // AC Suffix
+            {
+                outStr[4] = 'E';
+                outStr[5] = 'F';
+        
+            } else if (suffixMode==2)   // HZ Suffix
+            {
+                outStr[4] = 'G';
+                outStr[5] = 'H';
+            }
+            Serial2.println(outStr);
+            //Serial.println(outStr);
+        }
+};
 
 // Class for the use of the phone speaker. This is technically not necessary,
 // but it makes all code for the phone centralized and more readable.
-class AudioPlaybackFromSDCard
-{
-    TMRpcm tmrpcm; //create instance for sd card reading
-    File root;
-    public:
-        AudioPlaybackFromSDCard()
-        {
-            Serial.begin(9600);
-            Serial.println("1");
-            //tmrpcm.speakerPin = AUDIOPIN;
-            Serial.println("2");
-            //tmrpcm.disable();
-            Serial.println("3");
-            // if (!SD.begin(SDCSPIN))
-            // {
-            //     Serial.println("4");
-            //     Serial.println("NO SD CARD");
-            //     //error();
-            // }
-            Serial.println("5");
-            //root = SD.open("/");      // open SD card main root
-            Serial.println("6");
-            //tmrpcm.setVolume(4);    //   0 to 7. Set volume level
-            Serial.println("7");
-            //tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
-            Serial.println("8");
-        }
+// class AudioPlaybackFromSDCard
+// {
+//     TMRpcm audio; //create instance for sd card reading
+//     File root;
+//     public:
+//         AudioPlaybackFromSDCard()
+//         {
+//             //Serial.begin(9600);
+//             // Serial.println("1");
+//             // Serial.println("1");
+//             Serial.print("Initializing SD card...");
+//             //delay(700);
+//             // if (!SD.begin()) {
+//             //     Serial.println("failed!");
+//             //     //error();
+//             // }
+//             // tmrpcm.speakerPin = AUDIOPIN;
+//             //Serial.println("2");
+//             //tmrpcm.disable();
+//             //Serial.println("3");
+//             // if (!SD.begin(SDCSPIN))
+//             // {
+//             //     Serial.println("4");
+//             //     Serial.println("NO SD CARD");
+//             //     //error();
+//             // }
+//             //Serial.println("5");
+//             //root = SD.open("/");      // open SD card main root
+//             //Serial.println("6");
+//             //tmrpcm.setVolume(4);    //   0 to 7. Set volume level
+//             //Serial.println("7");
+//             //tmrpcm.quality(1);      //  Set 1 for 2x oversampling Set 0 for normal
+//             //Serial.println("8");
+//         }
 
-        void playFailureAudio()
-        {
-            if ( !tmrpcm.isPlaying() ) {
-                // no audio file is playing
-                File entry =  root.openNextFile();  // open next file
-                if (! entry) {
-                    // no more files
-                    root.rewindDirectory();  // go to start of the folder
-                    return;
-                }
+//         void playFailureAudio()
+//         {
+//             if ( !audio.isPlaying() ) {
+//                 // no audio file is playing
+//                 File entry =  root.openNextFile();  // open next file
+//                 if (! entry) {
+//                     // no more files
+//                     root.rewindDirectory();  // go to start of the folder
+//                     return;
+//                 }
 
-                uint8_t nameSize = String(entry.name()).length();  // get file name size
-                String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+//                 uint8_t nameSize = String(entry.name()).length();  // get file name size
+//                 String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
 
-                if ( str1.equalsIgnoreCase(".wav") ) {
-                    // the opened file has '.wav' extension
-                    tmrpcm.play( entry.name() );      // play the audio file
-                    Serial.print("Playing file: ");
-                    Serial.println( entry.name() );
-                }
+//                 if ( str1.equalsIgnoreCase(".wav") ) {
+//                     // the opened file has '.wav' extension
+//                     audio.play( entry.name() );      // play the audio file
+//                     Serial.print("Playing file: ");
+//                     Serial.println( entry.name() );
+//                 }
 
-                else {
-                    // not '.wav' format file
-                    entry.close();
-                    return;
-                }
-            }
-        }
+//                 else {
+//                     // not '.wav' format file
+//                     entry.close();
+//                     return;
+//                 }
+//             }
+//         }
 
-        void disablePlayback()
-        {
-            tmrpcm.disable();
-        }
-};
+//         void disablePlayback()
+//         {
+//             audio.disable();
+//         }
+// };
 
 #endif // SETUP_H

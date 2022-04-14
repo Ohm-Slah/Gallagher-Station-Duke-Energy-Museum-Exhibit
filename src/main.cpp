@@ -31,9 +31,10 @@ void loop()
       phaseChange = false;
       phaseChangeLEDState(0);
       currentPhase = phaseZero();
-      intro();
     break;
     case 1:
+      lastResponse = millis();
+      intro();
       phaseChange = false;
       phaseChangeLEDState(1);
       currentPhase = phaseOne();

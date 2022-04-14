@@ -70,6 +70,7 @@ void setup() {
   }
   //delay(1000);
   //digitalWrite(scan[0], HIGH);
+  testSegments();
   
 }
 
