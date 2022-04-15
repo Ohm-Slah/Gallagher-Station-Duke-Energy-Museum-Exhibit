@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         3/16/22
+ * Last edit:         4/15/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -21,7 +21,7 @@
 // Begin with some setup of instances and variables not defined in "phases.h" //
 //------------------------------Start of Block--------------------------------//
 
-// reinstantiate global use variables
+// instantiate global use variables
 volatile bool phaseChange = false;
 volatile byte currentPhase = 0;
 volatile long long lastResponse = 0;
@@ -29,7 +29,7 @@ volatile long long lastResponse = 0;
 // Create an Encoder instances, using 2 pins each.
 Encoder Air(ENCODER1APIN, ENCODER1BPIN); 
 Encoder Coal(ENCODER4APIN, ENCODER4BPIN); 
-Encoder Voltage(ENCODER2APIN, ENCODER2BPIN);
+Encoder Reostat(ENCODER2APIN, ENCODER2BPIN);
 Encoder Govenor(ENCODER3APIN, ENCODER3BPIN);
 
 // Create LED blinking instances tied to their pinout that can be modified individually with minimal interaction
@@ -42,15 +42,19 @@ TimedBlink SENDPOWERBUTTONLED(SENDPOWERBUTTONLEDPIN);
 TimedBlink MAINSWITCHLED(MAINSWITCHLEDPIN);
 TimedBlink COALLED(COALLEDPIN);
 TimedBlink AIRLED(AIRLEDPIN);
-TimedBlink VOLTAGELED(VOLTAGELEDPIN);
+TimedBlink REOSTATLED(REOSTATLEDPIN);
 TimedBlink STEAMLED(STEAMLEDPIN);
 
-// Create stepper motor instance to control
+// Create stepper motor instance to control named 'Synchroscope'
 Stepper Synchroscope;
 
+// Create stepper motor instance to control named 'SSDisplay'
 SevenSegmentDisplay SSDisplay;
 
-TMRpcm audio; //create instance for sd card reading
+// Create instance for sd card reading named 'audio'
+TMRpcm audio; 
+
+// Create instance for sd card Files named 'root'
 File root;
 
 // declare reset function @ address 0
@@ -65,58 +69,43 @@ void initialization()
    * This fuction is run once on startup.
    * This is to simply initialize everything needed.
   */
-  pinMode(PHONESWITCHPIN, INPUT_PULLUP);
-  pinMode(LIGHTBULBSWITCHPIN, OUTPUT);
-  pinMode(P1LEDPIN, OUTPUT); //Phase 1 LED
-  pinMode(P2LEDPIN, OUTPUT); //Phase 2 LED
-  pinMode(P3LEDPIN, OUTPUT); //Phase 3 LED
-  pinMode(P4LEDPIN, OUTPUT); //Phase 4 LED
-  pinMode(CONFIRMBUTTONLEDPIN, OUTPUT);
-  pinMode(SENDPOWERBUTTONLEDPIN, OUTPUT);
-  pinMode(MAINSWITCHLEDPIN, OUTPUT);
-  pinMode(COALLEDPIN, OUTPUT);
-  pinMode(AIRLEDPIN, OUTPUT);
-  pinMode(VOLTAGELEDPIN, OUTPUT);
-  pinMode(STEAMLEDPIN, OUTPUT);
-  pinMode(LED_ON_BOARD, OUTPUT); //LED pin on Arduino Mega
-  pinMode(MOTOR_PIN, OUTPUT);
-  pinMode(TEMPERATURESERVOPIN, OUTPUT);
-  pinMode(VOLTAGESERVOPIN, OUTPUT);
-  pinMode(RESETSWITCHPIN, INPUT_PULLUP);
+  pinMode(PHONESWITCHPIN, INPUT_PULLUP);    // Pressure switch on phone, with internal PULLUP resistor
+  pinMode(LIGHTBULBSWITCHPIN, OUTPUT);      // 120V lighbulb control at top of display
+  pinMode(P1LEDPIN, OUTPUT);                // Red-cap Phase 1 LED
+  pinMode(P2LEDPIN, OUTPUT);                // Red-cap Phase 2 LED
+  pinMode(P3LEDPIN, OUTPUT);                // Red-cap Phase 3 LED
+  pinMode(P4LEDPIN, OUTPUT);                // Red-cap Phase 4 LED
+  pinMode(CONFIRMBUTTONLEDPIN, OUTPUT);     // Yellow-cap LED by green confirm button
+  pinMode(SENDPOWERBUTTONLEDPIN, OUTPUT);   // Yellow-cap LED by red send-power button
+  pinMode(MAINSWITCHLEDPIN, OUTPUT);        // Green-cap LED by knife switch
+  pinMode(COALLEDPIN, OUTPUT);              // Yellow-cap LED by coal rotary encoder
+  pinMode(AIRLEDPIN, OUTPUT);               // Yellow-cap LED by air rotary encoder
+  pinMode(REOSTATLEDPIN, OUTPUT);           // Yellow-cap LED by rheostat rotary encoder 
+  pinMode(STEAMLEDPIN, OUTPUT);             // Yellow-cap LED by governor rotary encoder
+  pinMode(LED_ON_BOARD, OUTPUT);            // LED pin on Arduino Mega
+  pinMode(MOTOR_PIN, OUTPUT);               // DC-motor PWM pin
+  pinMode(TEMPERATURESERVOPIN, OUTPUT);     // Temperature gauge servo PWM pin
+  pinMode(AMPERAGESERVOPIN, OUTPUT);        // Amperage gauge servo PWM pin
+  pinMode(RESETSWITCHPIN, INPUT_PULLUP);    // Knife switch reset pin with internal PULLUP resistor
+  // Attach an ISR to knife switch on FALLING edge, calling the resetPhases() function when triggered
   attachInterrupt(digitalPinToInterrupt(RESETSWITCHPIN), resetPhases, FALLING);
-  pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);
-  pinMode(SENDPOWERBUTTONPIN, INPUT_PULLUP);
+  pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);  // Green momentary pushbutton with internal PULLUP resistor
+  pinMode(SENDPOWERBUTTONPIN, INPUT_PULLUP);// Red momentary pushbutton with internal PULLUP resistor
 
+  // Set timeout variable to current time in milliseconds
   lastResponse = millis();
 
-  // RedLED1.blink(1000,1000);
-  // RedLED2.blink(1000,1000);
-  // RedLED3.blink(1000,1000);
-  // RedLED4.blink(1000,1000);
-  // CONFIRMBUTTONLED.blink(1000,1000);
-  // SENDPOWERBUTTONLED.blink(1000,1000);
-  // MAINSWITCHLED.blink(1000,1000);
-  // COALLED.blink(1000,1000);
-  // AIRLED.blink(1000,1000);
-  // VOLTAGELED.blink(1000,1000);
-  // STEAMLED.blink(1000,1000);
-
-  sei();
-  Serial.begin(9600);
-  delay(100);
-  initSDCard();
+  sei();              // Enable interrupts
+  Serial.begin(9600); // Begin Serial communication at 9600 BAUD rate
+  delay(100);         // Delay 200 ms for serial com to begin
+  initSDCard();       // Initialize SD Card and audio setup
 
   // ! Synchroscope.homeStepper();
-  // SSDisplay.display("12.39  ", 0);
-  // delay(1000);
-  // SSDisplay.display("123.4  ", 1);
-  // delay(1000);
-  // SSDisplay.display("9.765  ", 2);
-  // delay(1000);
-  // SSDisplay.display("12.3   ", 0);
-  // delay(1000);
+
+  // Clear 7-segment display
   SSDisplay.display("      ", 0);
 
+  // Attempt Serial communcation call-response with Raspberry Pi
   if (!serialResponse("RESPOND")) error();
 
 }
@@ -124,34 +113,24 @@ void initialization()
 void reset()
 {
   /*
-   * This function can be ran when all items on board need to be reset
+   * This function can be ran when all items need to be reset
    */
   
   //!Synchroscope.homeStepper();
-  //phaseChangeLEDState(0);
-  //Serial.println("RESET");
-  Air.write(1);
+
+  Air.write(1); // Reset encoder positional values
   Coal.write(1);
+  Reostat.write(1);
 
-  disablePlayback();
+  disablePlayback();  // Disable audio playback through phone speaker
 
-  digitalWrite(LIGHTBULBSWITCHPIN, LOW);
+  digitalWrite(LIGHTBULBSWITCHPIN, LOW);  // turn off 120V light
   
-  setDCMotor(0);
+  setDCMotor(0);                          // Set DC motor speed to 0
 
-  // clear 7-segment display
-  SSDisplay.display("      ", 0);
+  SSDisplay.display("      ", 0);         // clear 7-segment display
   
 }
-
-// function that executes whenever data is received from master
-// this function is registered as an event, see setup()
-// void sendEvent(uint16_t data)
-// {
-//   Wire.beginTransmission(4); // transmit to device #4
-//   Wire.write(data);              // sends one byte  
-//   Wire.endTransmission();    // stop transmitting
-// }
 
 void deepSleep()
 {
@@ -167,6 +146,10 @@ void deepSleep()
 
 void intro()
 {
+  /*
+   *  This function is ran to attempt to play the intro video.
+  */
+  // Do nothing until the knife switch is seated
   while(digitalRead(RESETSWITCHPIN));
 
   // Make sure everything is at an off state while the intro plays
@@ -175,15 +158,17 @@ void intro()
   // Begin introduction video
   if (!serialResponse("INTROS")) error();
   delay(100);
+
+  phaseChange = false;  // reset 'reset' flag
+
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  phaseChange = false;
-  while(digitalRead(CONFIRMBUTTONPIN)) {
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
     updateLEDS();
     if (phaseChange) return;
   } 
   delay(100);
-  while(!digitalRead(CONFIRMBUTTONPIN));
+  while(!digitalRead(CONFIRMBUTTONPIN));  // Do nothing while button is held
   delay(100);
 }
 
@@ -195,17 +180,22 @@ byte phaseZero()
    *  When exiting the sleep state, reseting function is needed.
    *  This currently does nothing.
   */
+
+  // Begin Phase 0 video
   if (!serialResponse("PHASE ZERO")) error();
+
+  // Disable stepper motor to save power
   Synchroscope.disable();
 
+  // while the knife switch is not pulled, update leds
   while (!phaseChange)
   {
     updateLEDS();
-    // !if (lastResponse + SLEEPTIME < millis()) 
-    // !{
-    // !  deepSleep();
-    // !}
+    // If a large amount of time has passed, goto deepSleep mode
+    if (lastResponse + SLEEPTIME < millis()) deepSleep();
   }
+
+  // Go to phase 1
   return 1;
 }
 
@@ -236,8 +226,6 @@ byte phaseOne()
    *  This complicated process is to allow a more dynamic output, and to increase the difficulty of an otherwise easy task.
    * 
   */
-
-  //sendEvent(123456);
 
   // initialize variables for finding tempLine
   int8_t coalRead = 0;
@@ -295,7 +283,7 @@ byte phaseOne()
     airRead = encoderRead('A');   //'A' = air
 
     // restricts 'sway' of output for instability factor to difference of inputs
-    if (count > abs(airAngle - coalAngle) * 50) dir = !dir;
+    if (count > abs(airAngle - coalAngle) * 50) dir = !dir; // TODO polish this
 
     // applies instability factor ot base line, 1000 is arbitrarily chosen
     bottomLine = 1000 - count;
@@ -336,7 +324,7 @@ byte phaseOne()
       // Serial.println(airAngle);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^//
-
+    // TODO polish this
     // apply law of sines as well as right triangle maths to solve for tempLine
     airLine = ((float)bottomLine * sin((float)coalAngle * PI / 180)) / sin(((float)180 - coalAngle - airAngle) * PI / 180);
     tempLine = sin((float)airAngle * PI / 180) * airLine;
@@ -353,7 +341,7 @@ byte phaseOne()
   
 
   // if tempLine is within arbitrary error margins, move on to phaseTwo().
-  // otherwise, move to failure state
+  // otherwise, move to a failure state
   uint8_t tempTolerance = 75;
   uint8_t balanceTolerance = 10;
   uint16_t idealtempLine = 785;
@@ -365,18 +353,18 @@ byte phaseOne()
     {
       if (abs(airAngle - coalAngle) < balanceTolerance) // checks if balance is out
       {
-        // move gauge servo to optimal value, found through trial and error
+        // move gauge servo to optimal value on gauge, found through trial and error
         analogWrite(TEMPERATURESERVOPIN, idealServoPosistion);
-        return 2;
+        return 2;     // Go to Phase 2 
       }
-      failure(1, 3);
-      return 1;
+      failure(1, 3);  // Play failure video, Phase 1 type 3 (unstable)
+      return 1;       // Retry Phase 1
     }
-    failure(1, 2);
-    return 1;
+    failure(1, 2);    // Play failure video, Phase 1 type 2 (low)
+    return 1;         // Retry Phase 1
   }
-  failure(1, 1);
-  return 1;
+  failure(1, 1);      // Play failure video, Phase 1 type 1 (high)
+  return 1;           // Retry Phase 1
 }
 
 byte phaseTwo()
@@ -510,7 +498,7 @@ byte phaseThree()
   delay(500);
 
   // reset voltage encoder simulated position
-  Voltage.write(0);
+  Reostat.write(0);
 
   // initialize temporary variables
   int16_t voltageRead = 0;
@@ -541,7 +529,7 @@ byte phaseThree()
     {
       lastResponse = millis();
       voltage += voltageRead*2;
-      Voltage.write(0);
+      Reostat.write(0);
 
       if (voltage > 255)
         voltage = 255;
@@ -552,7 +540,7 @@ byte phaseThree()
       Serial.println(voltage);
 
       // ! This line must be tested to find appropriate values to display through servo
-      analogWrite(VOLTAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
+      analogWrite(AMPERAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -664,10 +652,6 @@ bool serialResponse(char com[])
    * "COMPLETE" "SLEEP"
   */
   uint8_t attempts = 0;
-  // // !
-  // Serial.println(com);
-  // return true;
-  // // !
 
   delay(100);
   while (attempts <= 5)
@@ -677,8 +661,6 @@ bool serialResponse(char com[])
     if (Serial.available())
     {
       char val = Serial.read();
-      // Serial.print("GOT: ");
-      // Serial.println(val);
       if (val == '1' && com == "RESPOND")
       {
         return true;
@@ -735,7 +717,7 @@ bool serialResponse(char com[])
         return true;
       } else if (val == 'J' && com == "PHASE FOUR LOOP") 
       {
-        return true;
+        return true;  
       } else if (val == 'K' && com == "PHASE FOUR FAIL HIGH") 
       {
         return true;
@@ -749,7 +731,6 @@ bool serialResponse(char com[])
       {
         return true;
       } else {
-        //return false;
         attempts++;
       }
     }
@@ -766,10 +747,8 @@ bool serialWait()
   /*
    * This function will return true if there was anything waiting in the USB serial buffer
   */
-//  Serial.print("WAIT ATTEMPT");
   if(Serial.available())
   {
-    // Serial.println("WAIT");
     char val = Serial.read();
     if (val == '0') 
       return true;
@@ -871,7 +850,7 @@ byte completion()
   /*
    * This function is the completion state of the display.
   */
-  if (!serialResponse("COMPLETE")) error();
+  if (!serialResponse("COMPLETE")) error(); // TODO Make complete code a return/skip function
   digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
   phaseChangeLEDState(10);
   delay(7500);
@@ -1000,7 +979,7 @@ void updateLEDS()
   MAINSWITCHLED.blink();
   COALLED.blink();
   AIRLED.blink();
-  VOLTAGELED.blink();
+  REOSTATLED.blink();
   STEAMLED.blink();
   //Serial.println("LED STATE UPDATE");
 }
@@ -1022,7 +1001,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blink(500, 500);  // 500ms on / 500ms off
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blinkOff();
+      REOSTATLED.blinkOff();
       STEAMLED.blinkOff();
       //Serial.println("PHASE 0 LIGHTS");
     break;
@@ -1036,7 +1015,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blink(500, 500);
       COALLED.blink(10000, 1);
       AIRLED.blink(10000, 1);
-      VOLTAGELED.blinkOff();
+      REOSTATLED.blinkOff();
       STEAMLED.blinkOff();
       //Serial.println("PHASE 1 LIGHTS");
       break;
@@ -1050,7 +1029,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blinkOff();
+      REOSTATLED.blinkOff();
       STEAMLED.blink(10000, 1);
     break;
     case 3:
@@ -1063,7 +1042,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blink(10000, 1);
+      REOSTATLED.blink(10000, 1);
       STEAMLED.blinkOff();
     break;
     case 4:
@@ -1076,7 +1055,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blink(500, 500);
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blinkOff();
+      REOSTATLED.blinkOff();
       STEAMLED.blinkOff();
     break;
     case 10:  //phase 'complete'
@@ -1089,7 +1068,7 @@ void phaseChangeLEDState(uint8_t phase)
       MAINSWITCHLED.blinkOff();
       COALLED.blinkOff();
       AIRLED.blinkOff();
-      VOLTAGELED.blinkOff();
+      REOSTATLED.blinkOff();
       STEAMLED.blinkOff();
     break;
   }
@@ -1106,9 +1085,9 @@ int8_t encoderRead(char enc)
   } else if (enc == 'C')    //if Coal Control
   {
     return Coal.read();     //returns the accumlated position (new position)
-  } else if (enc == 'V')    //if Voltage Control
+  } else if (enc == 'V')    //if Reostat Control
   {
-    return Voltage.read();   //returns the accumlated position (new position)
+    return Reostat.read();   //returns the accumlated position (new position)
   }  else if (enc == 'G')    //if Govenor(steam) Control
   {
     return Govenor.read();   //returns the accumlated position (new position)
