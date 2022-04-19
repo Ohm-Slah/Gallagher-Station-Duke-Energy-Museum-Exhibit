@@ -128,7 +128,7 @@ void reset()
   
   setDCMotor(0);                          // Set DC motor speed to 0
 
-  SSDisplay.display("      ", 0);         // clear 7-segment display
+  SSDisplay.display("       ", 0);         // clear 7-segment display
   
 }
 
@@ -151,6 +151,8 @@ void intro()
   */
   // Do nothing until the knife switch is seated
   while(digitalRead(RESETSWITCHPIN));
+
+  
 
   // Make sure everything is at an off state while the intro plays
   reset();
@@ -183,6 +185,8 @@ byte phaseZero()
 
   // Begin Phase 0 video
   if (!serialResponse("PHASE ZERO")) error();
+
+  reset();
 
   // Disable stepper motor to save power
   Synchroscope.disable();
@@ -239,11 +243,12 @@ byte phaseOne()
 
   // variables used for instability factor, or 'sway'
   bool dir = false;  //0=left & 1=right
-  uint8_t count = 0;
+  int8_t count = 0;
 
   // Reset lastResonse to avoid resetting to phaseZero due to inactivity
   // after watching the introduction video.
   lastResponse = millis();
+  SSDisplay.display("       ", 0);         // clear 7-segment display
   
   // Begin phase 1 video.
   if (!serialResponse("PHASE ONE INTRO")) error();
@@ -283,10 +288,10 @@ byte phaseOne()
     airRead = encoderRead('A');   //'A' = air
 
     // restricts 'sway' of output for instability factor to difference of inputs
-    if (count > abs(airAngle - coalAngle) * 50) dir = !dir; // TODO polish this
+    // if (count > (airAngle - coalAngle) * 50) dir = !dir; // TODO polish this
 
     // applies instability factor ot base line, 1000 is arbitrarily chosen
-    bottomLine = 1000 - count;
+    //bottomLine = 1000 - count;
 
     // increment/decrement instability factor according to direction of sway
     if (dir)
@@ -351,14 +356,14 @@ byte phaseOne()
   {
     if ((tempLine - idealtempLine) > -tempTolerance)  // checks if too low
     {
-      if (abs(airAngle - coalAngle) < balanceTolerance) // checks if balance is out
-      {
+      //if (abs(airAngle - coalAngle) < balanceTolerance) // checks if balance is out
+      //{
         // move gauge servo to optimal value on gauge, found through trial and error
         analogWrite(TEMPERATURESERVOPIN, idealServoPosistion);
         return 2;     // Go to Phase 2 
-      }
-      failure(1, 3);  // Play failure video, Phase 1 type 3 (unstable)
-      return 1;       // Retry Phase 1
+      //}
+      //failure(1, 3);  // Play failure video, Phase 1 type 3 (unstable)
+      //return 1;       // Retry Phase 1
     }
     failure(1, 2);    // Play failure video, Phase 1 type 2 (low)
     return 1;         // Retry Phase 1
@@ -392,7 +397,8 @@ byte phaseTwo()
 
   // Wait until intro video is finished playing, or until confirm button
   // is pressed. This action will skip the intro video.
-  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) 
+  {
     updateLEDS();
     if (phaseChange) return 1;
   }
@@ -403,8 +409,10 @@ byte phaseTwo()
 
   // create temporary variable to store and handle data. 23 is set as lowest speed for dc motor.
   int16_t steamRead = 0;
-  int16_t steam = 23;
-  setDCMotor(23);
+  int16_t steam = 90;
+  char cstr[7];
+  setDCMotor(90);
+  SSDisplay.display("30     ", 2);
 
   if (!serialResponse("PHASE TWO LOOP")) error();
 
@@ -430,17 +438,27 @@ byte phaseTwo()
       steam += steamRead;
       Govenor.write(0);
 
-      if (steam > 210)
-        steam = 210;
-      else if (steam < 23)
-        steam = 23;
+      if (steam > 200)
+        steam = 200;
+      else if (steam < 90)
+        steam = 90;
 
       setDCMotor(steam);
-      //Serial.println(steam);
-
-      // ! This line must be tested to find appropriate values to display on 7-segment
-      //Serial.print((char) map(steam, 0, 1, 0, 1));
       
+      itoa(map(steam, 90, 200, 30, 65), cstr, 10);
+      for(int i=0; i<7; i++)
+      {
+        if(cstr[i]==0) 
+        {
+          for(;i<7;i++)
+          {
+            cstr[i] = ' ';
+          }
+          break;
+        }
+      }
+      SSDisplay.display(cstr, 2);
+      delay(10);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -448,16 +466,16 @@ byte phaseTwo()
     steamRead = encoderRead('G');
   }
 
-  delay(1000);
+  delay(100);
   //Serial.println(steam);  //uncomment this line for serial debugging
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
-  if (steam - 184 < 3)
+  if (steam - 187 < 3)
   {
-    if ((steam - 184) > -3)
+    if ((steam - 187) > -3)
     {
-      setDCMotor(184);
+      setDCMotor(187);
       return 3;
     }
     failure(2, 2);
@@ -500,6 +518,8 @@ byte phaseThree()
   // reset voltage encoder simulated position
   Reostat.write(0);
 
+  SSDisplay.display("61     ", 2);
+
   // initialize temporary variables
   int16_t voltageRead = 0;
   int16_t voltage = 0;
@@ -537,7 +557,7 @@ byte phaseThree()
         voltage = 0;
 
       // ! This line must be tested to find appropriate values to display on 7-segment
-      Serial.println(voltage);
+      //Serial.println(voltage);
 
       // ! This line must be tested to find appropriate values to display through servo
       analogWrite(AMPERAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
@@ -598,6 +618,8 @@ byte phaseFour()
   delay(500);
   
   phaseChange = false;
+
+  SSDisplay.display("61     ", 2);
 
   // loop until confirm button is pressed
   while (digitalRead(SENDPOWERBUTTONPIN))
@@ -771,6 +793,8 @@ void failure(uint8_t phase, uint8_t failureReason)
   */
   delay(100);
   if (!serialResponse("RING")) error();
+  reset();
+
   while (!digitalRead(PHONESWITCHPIN)) {
     updateLEDS();
     if (phaseChange) return;
@@ -835,10 +859,10 @@ void failure(uint8_t phase, uint8_t failureReason)
     break;
   }
 
-  playFailureAudio();
-  while(audio.isPlaying());
+  //playFailureAudio();
+  //while(audio.isPlaying());
 
-  while (digitalRead(PHONESWITCHPIN)) 
+  while (digitalRead(PHONESWITCHPIN))
   {
     updateLEDS();
     if (phaseChange) return;
