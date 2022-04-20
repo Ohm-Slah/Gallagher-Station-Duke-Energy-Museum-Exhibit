@@ -39,10 +39,10 @@
 #define MOTOR_PIN 7
 #define DIRPIN 25
 #define STEPPIN 27
-#define ENPIN 22
+#define ENPIN 22	
 #define HOMEPIN 24
 // GND
-// NC
+// NC	//needs to be updated to have pin 33 for DC motor enable
 //^^^^^^^^^^^^^^^^^^^//
 
 //-------------------//
