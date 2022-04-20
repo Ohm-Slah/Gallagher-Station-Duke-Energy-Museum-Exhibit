@@ -859,8 +859,8 @@ void failure(uint8_t phase, uint8_t failureReason)
     break;
   }
 
-  //playFailureAudio();
-  //while(audio.isPlaying());
+  playFailureAudio();
+  while(audio.isPlaying());
 
   while (digitalRead(PHONESWITCHPIN))
   {
