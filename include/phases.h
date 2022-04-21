@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.h"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         4/15/22
+ * Last edit:         4/21/22
  * Code usage:
  * This is a header file for "phases.cpp".
  * All libraries used or function declarations are located and defined here.
@@ -39,10 +39,10 @@
 #define MOTOR_PIN 7
 #define DIRPIN 25
 #define STEPPIN 27
-#define ENPIN 22	
+#define STEPPERENPIN 22	
 #define HOMEPIN 24
 // GND
-// NC	//needs to be updated to have pin 33 for DC motor enable
+#define DCMOTORENPIN 33
 //^^^^^^^^^^^^^^^^^^^//
 
 //-------------------//
@@ -179,6 +179,7 @@ void servoMove(uint16_t position);
 void resetPhases();
 int8_t encoderRead(char enc);
 void setDCMotor(uint16_t pwmValue);
+void disableDCMotor();
 int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 //^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^//
 
@@ -189,7 +190,7 @@ class Stepper
     public:
         Stepper()   //constructor, this is called when an instance is created
         {
-            pinMode(ENPIN, OUTPUT);
+            pinMode(STEPPERENPIN, OUTPUT);
             pinMode(STEPPIN, OUTPUT);
             pinMode(HOMEPIN, OUTPUT);
             pinMode(DIRPIN, OUTPUT);  
@@ -217,7 +218,7 @@ class Stepper
 
         void homeStepper()  // place needle on known position of dial to track position
         {
-            digitalWrite(ENPIN, LOW);   // enable stepper motor
+            digitalWrite(STEPPERENPIN, LOW);   // enable stepper motor
 
             // rotate stepper motor until the homing switch is triggered.
             while (digitalRead(HOMEPIN))
@@ -231,7 +232,7 @@ class Stepper
 
         void disable()  // disable stepper motor
         {
-            digitalWrite(ENPIN, HIGH);
+            digitalWrite(STEPPERENPIN, HIGH);
         }
 
         uint16_t stepperPosition; 

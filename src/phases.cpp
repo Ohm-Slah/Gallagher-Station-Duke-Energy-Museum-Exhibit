@@ -1,7 +1,7 @@
 /*
  * File name:         "phases.cpp"
  * Contributor(s):    Elliot Eickholtz, Matthew Wrocklage, Jackson Couch, Andrew Boehm
- * Last edit:         4/15/22
+ * Last edit:         4/21/22
  * 
  * Code usage:
  * This is a file containing all functions used in each of the five phases of the "main.cpp" file.
@@ -121,6 +121,8 @@ void reset()
   Air.write(1); // Reset encoder positional values
   Coal.write(1);
   Reostat.write(1);
+  Synchroscope.disable();
+  disableDCMotor();
 
   disablePlayback();  // Disable audio playback through phone speaker
 
@@ -1123,5 +1125,11 @@ void setDCMotor(uint16_t pwmValue)
   /*
    * This fuction recieves an integer value and runs the DC motor at that PWM at 255 precision.
   */
+  digitalWrite(DCMOTORENPIN, HIGH);
   analogWrite(MOTOR_PIN, pwmValue);
+}
+
+void disableDCMotor()
+{
+  digitalWrite(DCMOTORENPIN, LOW);
 }
