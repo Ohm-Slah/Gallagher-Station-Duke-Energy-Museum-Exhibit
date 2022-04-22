@@ -51,11 +51,11 @@
 #define P3LEDPIN 21
 #define P4LEDPIN 20
 #define COALLEDPIN 15
-#define AIRLEDPIN 4
-#define REOSTATLEDPIN 14
+#define AIRLEDPIN 6
+#define REOSTATLEDPIN 23
 #define STEAMLEDPIN 5
-#define CONFIRMBUTTONLEDPIN 6
-#define SENDPOWERBUTTONLEDPIN 23
+#define CONFIRMBUTTONLEDPIN 4
+#define SENDPOWERBUTTONLEDPIN 14
 #define MAINSWITCHLEDPIN 8
 //^^^^^^^^^^^^^^^^^^^//
 
@@ -225,7 +225,7 @@ class Stepper
             {
                 updateLEDS();
                 singleStep(true);
-                delay(4);   // change delay to change speed of motor
+                delay(8);   // change delay to change speed of motor
             }
             stepperPosition = 0;
         }

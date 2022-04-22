@@ -92,6 +92,15 @@ void initialization()
   pinMode(CONFIRMBUTTONPIN, INPUT_PULLUP);  // Green momentary pushbutton with internal PULLUP resistor
   pinMode(SENDPOWERBUTTONPIN, INPUT_PULLUP);// Red momentary pushbutton with internal PULLUP resistor
 
+  pinMode(ENCODER1APIN, INPUT_PULLUP);
+  pinMode(ENCODER1BPIN, INPUT_PULLUP);
+  pinMode(ENCODER2APIN, INPUT_PULLUP);
+  pinMode(ENCODER2BPIN, INPUT_PULLUP);
+  pinMode(ENCODER3APIN, INPUT_PULLUP);
+  pinMode(ENCODER3BPIN, INPUT_PULLUP);
+  pinMode(ENCODER4APIN, INPUT_PULLUP);
+  pinMode(ENCODER4BPIN, INPUT_PULLUP);
+
   // Set timeout variable to current time in milliseconds
   lastResponse = millis();
 
@@ -100,7 +109,9 @@ void initialization()
   delay(100);         // Delay 200 ms for serial com to begin
   initSDCard();       // Initialize SD Card and audio setup
 
-  // ! Synchroscope.homeStepper();
+  Synchroscope.homeStepper();
+
+  disablePlayback();  // Disable audio playback through phone speaker
 
   // Clear 7-segment display
   SSDisplay.display("      ", 0);
@@ -116,7 +127,7 @@ void reset()
    * This function can be ran when all items need to be reset
    */
   
-  //!Synchroscope.homeStepper();
+  Synchroscope.homeStepper();
 
   Air.write(1); // Reset encoder positional values
   Coal.write(1);
@@ -184,6 +195,8 @@ byte phaseZero()
    *  When exiting the sleep state, reseting function is needed.
    *  This currently does nothing.
   */
+
+  reset();
 
   // Begin Phase 0 video
   if (!serialResponse("PHASE ZERO")) error();
@@ -306,7 +319,7 @@ byte phaseOne()
     if (coalRead)
     {
       lastResponse = millis();
-      coalAngle += coalRead*2;
+      coalAngle += coalRead;
       Coal.write(0);
       if (coalAngle > 70)
         coalAngle = 70;
@@ -322,7 +335,7 @@ byte phaseOne()
     if (airRead)
     {
       lastResponse = millis();
-      airAngle += airRead*2;
+      airAngle += airRead;
       Air.write(0);
       if (airAngle > 70)
         airAngle = 70;
@@ -351,8 +364,8 @@ byte phaseOne()
   // otherwise, move to a failure state
   uint8_t tempTolerance = 75;
   uint8_t balanceTolerance = 10;
-  uint16_t idealtempLine = 785;
-  uint8_t idealServoPosistion = 110;
+  uint16_t idealtempLine = 900;
+  uint8_t idealServoPosistion = 95;
 
   if ((tempLine - idealtempLine) < tempTolerance) // checks if too high
   {
@@ -473,11 +486,11 @@ byte phaseTwo()
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
-  if (steam - 187 < 3)
+  if (steam - 189 < 3)
   {
-    if ((steam - 187) > -3)
+    if ((steam - 189) > -3)
     {
-      setDCMotor(187);
+      setDCMotor(189);
       return 3;
     }
     failure(2, 2);
@@ -559,20 +572,17 @@ byte phaseThree()
         voltage = 0;
 
       // ! This line must be tested to find appropriate values to display on 7-segment
-      //Serial.println(voltage);
+      // Serial.println(voltage);
 
-      // ! This line must be tested to find appropriate values to display through servo
       analogWrite(AMPERAGESERVOPIN, map((int)voltage, 0, 255, 255, 0));
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
   }
 
-  // ! This code below must be tested to find actual error margins //
-  // !-------------------------Start of Block----------------------//
-  if (abs(voltage - 208) < 5)  
+  if (abs(voltage - 146) < 5)  
   {
-    if ((voltage - 208) > -5)
+    if ((voltage - 146) > -5)
     {
       return 4; // begin phase 4
     }
@@ -581,7 +591,6 @@ byte phaseThree()
   }
   failure(3, 1);
   return 3; // begin phase 3, again
-  // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 }
 
 byte phaseFour()
@@ -616,8 +625,8 @@ byte phaseFour()
 
   lastResponse = millis();
 
-  Serial.println("Stepper Homed");
-  delay(500);
+  //Serial.println("Stepper Homed");
+  delay(250);
   
   phaseChange = false;
 
@@ -681,7 +690,7 @@ bool serialResponse(char com[])
   while (attempts <= 5)
   {
     updateLEDS();
-    delay(500);
+    delay(250);
     if (Serial.available())
     {
       char val = Serial.read();
@@ -759,7 +768,7 @@ bool serialResponse(char com[])
       }
     }
     Serial.println(com);
-    delay(1000);
+    delay(250);
     attempts++;
   }
   return false;
@@ -795,9 +804,9 @@ void failure(uint8_t phase, uint8_t failureReason)
   */
   delay(100);
   if (!serialResponse("RING")) error();
-  reset();
 
-  while (!digitalRead(PHONESWITCHPIN)) {
+  while (!digitalRead(PHONESWITCHPIN))
+  {
     updateLEDS();
     if (phaseChange) return;
   }
@@ -863,6 +872,7 @@ void failure(uint8_t phase, uint8_t failureReason)
 
   playFailureAudio();
   while(audio.isPlaying());
+  disablePlayback();
 
   while (digitalRead(PHONESWITCHPIN))
   {
@@ -876,10 +886,15 @@ byte completion()
   /*
    * This function is the completion state of the display.
   */
-  if (!serialResponse("COMPLETE")) error(); // TODO Make complete code a return/skip function
+  if (!serialResponse("COMPLETE")) error(); 
+  delay(500);
   digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
   phaseChangeLEDState(10);
-  delay(7500);
+
+  while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
+    updateLEDS();
+    if (phaseChange) return 1;
+  }
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);
   return 0;
 }
@@ -906,7 +921,7 @@ void resetPhases()
    * This function is attached to an interrupt, and resets any progress in the phases, bringing you back you phase 1.
   */
   cli();
-  Serial.println("EVENT");
+  //Serial.println("EVENT");
   phaseChange = true;
   currentPhase = 1;
   sei();
@@ -924,7 +939,7 @@ void initSDCard()
   audio.speakerPin = 46;  // set speaker output to pin 46
 
   root = SD.open("/");      // open SD card main root
-  printDirectory(root, 0);  // print all files names and sizes
+  //printDirectory(root, 0);  // print all files names and sizes
 
 
   audio.setVolume(5);    //   0 to 7. Set volume level
@@ -962,33 +977,34 @@ void playFailureAudio()
   }
 }
 
-void printDirectory(File dir, int numTabs) {
-  while (true) {
+// void printDirectory(File dir, int numTabs) {
+//   while (true) {
 
-    File entry =  dir.openNextFile();
-    if (! entry) {
-      // no more files
-      break;
-    }
-    for (uint8_t i = 0; i < numTabs; i++) {
-      Serial.print('\t');
-    }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      Serial.println("/");
-      printDirectory(entry, numTabs + 1);
-    } else {
-      // files have sizes, directories do not
-      Serial.print("\t\t");
-      Serial.println(entry.size(), DEC);
-    }
-    entry.close();
-  }
-}
+//     File entry =  dir.openNextFile();
+//     if (! entry) {
+//       // no more files
+//       break;
+//     }
+//     for (uint8_t i = 0; i < numTabs; i++) {
+//       Serial.print('\t');
+//     }
+//     Serial.print(entry.name());
+//     if (entry.isDirectory()) {
+//       Serial.println("/");
+//       printDirectory(entry, numTabs + 1);
+//     } else {
+//       // files have sizes, directories do not
+//       Serial.print("\t\t");
+//       Serial.println(entry.size(), DEC);
+//     }
+//     entry.close();
+//   }
+// }
 
 void disablePlayback()
 {
   audio.disable();
+  digitalWrite(AUDIOPIN, LOW);
 }
 
 void updateLEDS()
