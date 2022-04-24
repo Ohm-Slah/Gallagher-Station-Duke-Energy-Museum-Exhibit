@@ -21,17 +21,17 @@
 //------------------------Start of Block-------------------------------//
 
 //-------------------//
-#define ENCODER1APIN 9
-#define ENCODER1BPIN 19
+#define ENCODER1APIN 9      //air encoder A
+#define ENCODER1BPIN 19     //air encoder B
 // GND
-#define ENCODER2APIN 10
-#define ENCODER2BPIN 18
+#define ENCODER2APIN 10     //rheostat encoder A     
+#define ENCODER2BPIN 18     //rheostat encoder B
 // GND
-#define ENCODER3APIN 11
-#define ENCODER3BPIN 2
+#define ENCODER3APIN 11     //governor valve encoder A
+#define ENCODER3BPIN 2      //governor valve encoder B
 // GND
-#define ENCODER4APIN 12
-#define ENCODER4BPIN 43
+#define ENCODER4APIN 12     //coal encoder A
+#define ENCODER4BPIN 43     //coal encoder B
 // GND
 //^^^^^^^^^^^^^^^^^^^//
 
