@@ -188,6 +188,9 @@ int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 class Stepper 
 {
     public:
+        uint16_t stepperPosition; 
+        const int stepsPerRevolution = 200;
+
         Stepper()   //constructor, this is called when an instance is created
         {
             pinMode(STEPPERENPIN, OUTPUT);
@@ -203,16 +206,16 @@ class Stepper
             { 
                 digitalWrite(DIRPIN, HIGH);
                 // keep track of the stepper motor position
-                stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
+                //stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
             } else 
             {
                 digitalWrite(DIRPIN, LOW);
                 // keep track of the stepper motor position
-                stepperPosition = (stepperPosition + stepsPerRevolution - 1) % stepsPerRevolution;
+                //stepperPosition = (stepperPosition + stepsPerRevolution - 1) % stepsPerRevolution;
             }
 
             digitalWrite(STEPPIN, HIGH);
-            delayMicroseconds(10);   // allow enough clock cycles to set STEPPIN to 5V
+            delayMicroseconds(100);   // allow enough clock cycles to set STEPPIN to 5V
             digitalWrite(STEPPIN, LOW);
         }
 
@@ -224,8 +227,8 @@ class Stepper
             while (digitalRead(HOMEPIN))
             {
                 updateLEDS();
-                singleStep(true);
-                delay(8);   // change delay to change speed of motor
+                singleStep(false);
+                delay(5);   // change delay to change speed of motor
             }
             stepperPosition = 0;
         }
@@ -235,8 +238,6 @@ class Stepper
             digitalWrite(STEPPERENPIN, HIGH);
         }
 
-        uint16_t stepperPosition; 
-        const int stepsPerRevolution = 200;
 };
 
 class SevenSegmentDisplay

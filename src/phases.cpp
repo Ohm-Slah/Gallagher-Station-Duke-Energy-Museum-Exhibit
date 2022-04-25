@@ -111,7 +111,7 @@ void initialization()
 
   Synchroscope.homeStepper();
 
-  disablePlayback();  // Disable audio playback through phone speaker
+  //disablePlayback();  // Disable audio playback through phone speaker
 
   // Clear 7-segment display
   SSDisplay.display("      ", 0);
@@ -135,7 +135,7 @@ void reset()
   Synchroscope.disable();
   disableDCMotor();
 
-  disablePlayback();  // Disable audio playback through phone speaker
+  //disablePlayback();  // Disable audio playback through phone speaker
 
   digitalWrite(LIGHTBULBSWITCHPIN, LOW);  // turn off 120V light
   
@@ -275,12 +275,14 @@ byte phaseOne()
     if (phaseChange) return 1;
   }
 
+  //waits for confirmation button to be pressed
   delay(100);
   while(!digitalRead(CONFIRMBUTTONPIN));
   delay(100);
 
   lastResponse = millis();
 
+  //if no serial response the phase does not change
   if (!serialResponse("PHASE ONE LOOP")) error();
 
   phaseChange = false;
@@ -364,7 +366,7 @@ byte phaseOne()
   // otherwise, move to a failure state
   uint8_t tempTolerance = 75;
   uint8_t balanceTolerance = 10;
-  uint16_t idealtempLine = 900;
+  uint16_t idealtempLine = 900;   //900 = approximately 2150 degrees on dial
   uint8_t idealServoPosistion = 95;
 
   if ((tempLine - idealtempLine) < tempTolerance) // checks if too high
@@ -381,6 +383,7 @@ byte phaseOne()
       //return 1;       // Retry Phase 1
     }
     failure(1, 2);    // Play failure video, Phase 1 type 2 (low)
+    
     return 1;         // Retry Phase 1
   }
   failure(1, 1);      // Play failure video, Phase 1 type 1 (high)
@@ -646,8 +649,8 @@ byte phaseFour()
     // update led blinking states
     updateLEDS();
 
-    Synchroscope.singleStep(true);
-    delay(25); // ! this delay will need to be adjusted to change difficulty
+    Synchroscope.singleStep(false);
+    delay(20); // ! this delay will need to be adjusted to change difficulty
   }
 
   lastResponse = millis();
@@ -659,17 +662,17 @@ byte phaseFour()
   // !-------------------------Start of Block----------------------//
   if((Synchroscope.stepperPosition - 0) > 1)
   {
-    if ((Synchroscope.stepperPosition - 0) > -1)
-    {
-      return 10;
-    }
-    failure(4, 2);
+     if ((Synchroscope.stepperPosition - 0) > -1)
+     {
+       return 10;
+     }
+     failure(4, 2);
     return 4;
-  }
-  failure(4, 1);
-  return 4;
-  // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
+   }
+   failure(4, 1);
+   return 4;
 }
+  // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 
 bool serialResponse(char com[])
 {
@@ -870,9 +873,9 @@ void failure(uint8_t phase, uint8_t failureReason)
     break;
   }
 
-  playFailureAudio();
-  while(audio.isPlaying());
-  disablePlayback();
+  //playFailureAudio();
+  //while(audio.isPlaying());
+  //disablePlayback();
 
   while (digitalRead(PHONESWITCHPIN))
   {
@@ -924,6 +927,7 @@ void resetPhases()
   //Serial.println("EVENT");
   phaseChange = true;
   currentPhase = 1;
+  reset();
   sei();
 }
 
@@ -948,64 +952,69 @@ void initSDCard()
 
 }
 
-void playFailureAudio()
-{
-  while ( !audio.isPlaying() ) {
-    // no audio file is playing
-    File entry =  root.openNextFile();  // open next file
-    if (! entry) {
-      // no more files
-      root.rewindDirectory();  // go to start of the folder
-      //return;
-    }
+/*
+ * Current status of phone code is the phone freezes servo motors from functioning when failure appears.
+ * troubleshoot and finish later
+ */
 
-    uint8_t nameSize = String(entry.name()).length();  // get file name size
-    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
-
-    if ( str1.equalsIgnoreCase(".wav") ) {
-      // the opened file has '.wav' extension
-      audio.play( entry.name() );      // play the audio file
-      Serial.print("Playing file: ");
-      Serial.println( entry.name() );
-    }
-
-    else {
-      // not '.wav' format file
-      entry.close();
-      //return;
-    }
-  }
-}
-
-// void printDirectory(File dir, int numTabs) {
-//   while (true) {
-
-//     File entry =  dir.openNextFile();
+// void playFailureAudio()
+// {
+//   while ( !audio.isPlaying() ) {
+//     // no audio file is playing
+//     File entry =  root.openNextFile();  // open next file
 //     if (! entry) {
 //       // no more files
-//       break;
+//       root.rewindDirectory();  // go to start of the folder
+//       //return;
 //     }
-//     for (uint8_t i = 0; i < numTabs; i++) {
-//       Serial.print('\t');
+
+//     uint8_t nameSize = String(entry.name()).length();  // get file name size
+//     String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+
+//     if ( str1.equalsIgnoreCase(".wav") ) {
+//       // the opened file has '.wav' extension
+//       audio.play( entry.name() );      // play the audio file
+//       Serial.print("Playing file: ");
+//       Serial.println( entry.name() );
 //     }
-//     Serial.print(entry.name());
-//     if (entry.isDirectory()) {
-//       Serial.println("/");
-//       printDirectory(entry, numTabs + 1);
-//     } else {
-//       // files have sizes, directories do not
-//       Serial.print("\t\t");
-//       Serial.println(entry.size(), DEC);
+
+//     else {
+//       // not '.wav' format file
+//       entry.close();
+//       //return;
 //     }
-//     entry.close();
 //   }
 // }
 
-void disablePlayback()
-{
-  audio.disable();
-  digitalWrite(AUDIOPIN, LOW);
-}
+// // void printDirectory(File dir, int numTabs) {
+// //   while (true) {
+
+// //     File entry =  dir.openNextFile();
+// //     if (! entry) {
+// //       // no more files
+// //       break;
+// //     }
+// //     for (uint8_t i = 0; i < numTabs; i++) {
+// //       Serial.print('\t');
+// //     }
+// //     Serial.print(entry.name());
+// //     if (entry.isDirectory()) {
+// //       Serial.println("/");
+// //       printDirectory(entry, numTabs + 1);
+// //     } else {
+// //       // files have sizes, directories do not
+// //       Serial.print("\t\t");
+// //       Serial.println(entry.size(), DEC);
+// //     }
+// //     entry.close();
+// //   }
+// // }
+
+// void disablePlayback()
+// {
+//   audio.disable();
+//   //digitalWrite(AUDIOPIN, LOW);
+// }
 
 void updateLEDS()
 {
