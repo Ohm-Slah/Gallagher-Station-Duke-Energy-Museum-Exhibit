@@ -141,7 +141,7 @@ void reset()
   
   setDCMotor(0);                          // Set DC motor speed to 0
 
-  SSDisplay.display("       ", 0);         // clear 7-segment display
+  SSDisplay.display("      ", 0);         // clear 7-segment display
   
 }
 
@@ -476,7 +476,7 @@ byte phaseTwo()
         }
       }
       SSDisplay.display(cstr, 2);
-      delay(10);
+      delay(15);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -489,11 +489,11 @@ byte phaseTwo()
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
-  if (steam - 189 < 3)
+  if (steam - 188 < 3)
   {
-    if ((steam - 189) > -3)
+    if ((steam - 188) > -3)
     {
-      setDCMotor(189);
+      setDCMotor(188);
       return 3;
     }
     failure(2, 2);
@@ -628,7 +628,7 @@ byte phaseFour()
 
   lastResponse = millis();
 
-  //Serial.println("Stepper Homed");
+  Serial.println("Stepper Homed");
   delay(250);
   
   phaseChange = false;
@@ -650,7 +650,7 @@ byte phaseFour()
     updateLEDS();
 
     Synchroscope.singleStep(false);
-    delay(20); // ! this delay will need to be adjusted to change difficulty
+    delay(7); // this delay will need to be adjusted to change difficulty
   }
 
   lastResponse = millis();
@@ -660,9 +660,10 @@ byte phaseFour()
 
   // ! This code below must be tested to find actual error margins //
   // !-------------------------Start of Block----------------------//
-  if((Synchroscope.stepperPosition - 0) > 1)
+  Serial.println(Synchroscope.stepperPosition);
+  if((Synchroscope.stepperPosition) > 5)
   {
-     if ((Synchroscope.stepperPosition - 0) > -1)
+     if ((Synchroscope.stepperPosition-200) > -5)
      {
        return 10;
      }
@@ -893,6 +894,8 @@ byte completion()
   delay(500);
   digitalWrite(LIGHTBULBSWITCHPIN, HIGH);
   phaseChangeLEDState(10);
+  SSDisplay.display("60     ", 2);
+  analogWrite(AMPERAGESERVOPIN, 30);
 
   while(!serialWait() && digitalRead(CONFIRMBUTTONPIN)) {
     updateLEDS();

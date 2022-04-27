@@ -13,7 +13,7 @@
 #define SETUP_H
 
 // Time in milliseconds to wait before timeout to phase zero and to sleep mode respectively
-#define WAITTIME 30000
+#define WAITTIME 100000
 #define SLEEPTIME 10800000
 
 //define all of the pins used with particular names for identification //
@@ -188,7 +188,7 @@ int mapValues(int x, int in_min, int in_max, int out_min, int out_max);
 class Stepper 
 {
     public:
-        uint16_t stepperPosition; 
+        int16_t stepperPosition; 
         const int stepsPerRevolution = 200;
 
         Stepper()   //constructor, this is called when an instance is created
@@ -206,12 +206,13 @@ class Stepper
             { 
                 digitalWrite(DIRPIN, HIGH);
                 // keep track of the stepper motor position
-                //stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
+                stepperPosition = (stepperPosition + 1) % stepsPerRevolution;
             } else 
             {
                 digitalWrite(DIRPIN, LOW);
                 // keep track of the stepper motor position
-                //stepperPosition = (stepperPosition + stepsPerRevolution - 1) % stepsPerRevolution;
+                stepperPosition = (stepperPosition - 1) % stepsPerRevolution;
+                if(stepperPosition = 0) stepperPosition = 200;
             }
 
             digitalWrite(STEPPIN, HIGH);
@@ -226,8 +227,8 @@ class Stepper
             // rotate stepper motor until the homing switch is triggered.
             while (digitalRead(HOMEPIN))
             {
-                updateLEDS();
                 singleStep(false);
+                updateLEDS();
                 delay(5);   // change delay to change speed of motor
             }
             stepperPosition = 0;
