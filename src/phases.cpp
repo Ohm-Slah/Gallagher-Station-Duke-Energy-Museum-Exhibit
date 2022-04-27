@@ -118,6 +118,7 @@ void initialization()
 
   // Attempt Serial communcation call-response with Raspberry Pi
   if (!serialResponse("RESPOND")) error();
+  
 
 }
 
@@ -462,7 +463,9 @@ byte phaseTwo()
         steam = 90;
 
       setDCMotor(steam);
-      
+
+      //map DC motor to make Hz and RPM work. Set for 61Hz and approximately 3,600 RPM
+      //original values 90, 200, 30, 65
       itoa(map(steam, 90, 200, 30, 65), cstr, 10);
       for(int i=0; i<7; i++)
       {
@@ -489,6 +492,7 @@ byte phaseTwo()
 
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
+  //original value: +- 3
   if (steam - 188 < 3)
   {
     if ((steam - 188) > -3)
