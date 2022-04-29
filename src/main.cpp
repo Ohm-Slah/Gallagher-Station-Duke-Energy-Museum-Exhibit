@@ -35,7 +35,6 @@ void loop()
     break;                          // end of phase 0
     case 1:                         // repeat near identical steps for phase 1
       lastResponse = millis();
-      reset();
       intro();                      // play intro video
       phaseChange = false;
       phaseChangeLEDState(1);

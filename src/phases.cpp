@@ -660,22 +660,28 @@ byte phaseFour()
   lastResponse = millis();
 
   //! 
-  return 10;
+  //return 10;
 
   // ! This code below must be tested to find actual error margins //
   // !-------------------------Start of Block----------------------//
   Serial.println(Synchroscope.stepperPosition);
-  if((Synchroscope.stepperPosition) > 5)
+  if(!digitalRead(HOMEPIN))
   {
-     if ((Synchroscope.stepperPosition-200) > -5)
-     {
-       return 10;
-     }
-     failure(4, 2);
-    return 4;
-   }
-   failure(4, 1);
-   return 4;
+    return 10;
+  }
+  failure(4, 2);
+  return 4;
+  // if((Synchroscope.stepperPosition) > 5)
+  // {
+  //    if ((Synchroscope.stepperPosition-200) > -5)
+  //    {
+  //      return 10;
+  //    }
+  //    failure(4, 2);
+  //   return 4;
+  //  }
+  //  failure(4, 1);
+  //  return 4;
 }
   // !^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^//
 
