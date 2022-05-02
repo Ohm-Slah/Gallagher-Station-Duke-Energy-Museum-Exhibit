@@ -20,24 +20,34 @@
 
 #include <Arduino.h>
 
-// define bytes for 7-segment display to replace these words
-#define NONE  0b11111111
-#define ZERO  0b00000011
-#define ONE   0b10011111
-#define TWO   0b00100101
-#define THREE 0b00001101
-#define FOUR  0b10011001
-#define FIVE  0b01001001
-#define SIX   0b01000001
-#define SEVEN 0b00011111
-#define EIGHT 0b00000001
-#define NINE  0b00011001
-#define A     0b00010001
-#define C     0b01100011
-#define H     0b10010001
-#define Z     0b00100101
+#define F_CPU 1000000UL
 
-// define I/O pins tied to 7-segment anodes
+#define NONE    0b11111111
+#define ZERO    0b00000011
+#define ONE     0b10011111
+#define TWO     0b00100101
+#define THREE   0b00001101
+#define FOUR    0b10011001
+#define FIVE    0b01001001
+#define SIX     0b01000001
+#define SEVEN   0b00011111
+#define EIGHT   0b00000001
+#define NINE    0b00011001
+#define ZEROP   0b00000010
+#define ONEP    0b10011110
+#define TWOP    0b00100100
+#define THREEP  0b00001100
+#define FOURP   0b10011000
+#define FIVEP   0b01001000
+#define SIXP    0b01000000
+#define SEVENP  0b00011110
+#define EIGHTP  0b00000000
+#define NINEP   0b00011000
+#define A       0b00010001
+#define C       0b01100011
+#define H       0b10010001
+#define Z       0b00100101
+
 #define D1 7
 #define D2 6
 #define D3 5
@@ -45,7 +55,6 @@
 #define D5 4
 #define D6 3
 
-// define I/O pins tied to 7-segment cathodes
 #define SegA  9
 #define SegB 10
 #define SegC 11
@@ -55,15 +64,13 @@
 #define SegG 15
 #define DP   16 //16
 
-// define array of presets to scroll through
-byte presets[15] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE, A, C, H, Z};
+byte presets[25] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, NONE,
+                    ZEROP,ONEP,TWOP,THREEP,FOURP,FIVEP,SIXP,SEVENP,EIGHTP,NINEP,
+                    A, C, H, Z};
 
-// define order of annodes tied to their I/O that needs to be multiplexed
 const byte scan[6] = {D1, D2, D3, D4, D5, D6};
-// define order of segments tied to their I/O
 const byte segments[8] = {SegA, SegB, SegC, SegD, SegE, SegF, SegG, DP};
 
-// array to hold data that will be scrolled through to multiplex
 char data[6] = {NONE, NONE, NONE, NONE, NONE, NONE};
 
 void setup()  //only runs once at startup.
@@ -83,10 +90,20 @@ void setup()  //only runs once at startup.
     pinMode(i, OUTPUT);
     digitalWrite(i, HIGH);
   }
+  //delay(1000);
+  //digitalWrite(scan[0], HIGH);
+  testSegments();
   
 }
 
-void loop() //constantly runs repeatedly
+void loop() { 
+  scanAnodes(400);
+  //data[0]++;
+  getSerial();
+  //testSegments();
+}
+
+void testSegments()
 {
   // sweep trough the annodes with data array 1ms between each
   scanAnodes(300);
@@ -96,8 +113,6 @@ void loop() //constantly runs repeatedly
 
 void scanAnodes(uint16_t del)
 {
-  // push currently saved data onto the 7-segment LEDs, multiplexing them once
-
   for(int i=0; i<6; i++)
   {
     for (int j=0; j<8; j++)

@@ -1,255 +1,320 @@
 #
 # File name:         "playvideo.py"
-# Contributor(s):    Elliot Eickholtz
-# Last edit:         3/16/22
+# Contributor(s):    Elliot Eickholtz, Andrew Boehm
+# Last edit:         3/23/22
 # Code usage:
 # This code is intended to run on a Raspberry Pi with a USB serial connection to the Arduino Mega
 # When a predefined serial command is recieved, the appropriate video and audio will play
-# on the HDMI-connected screen from the Raspberry Pi using OMXPlayer.
+# on the HDMI-connected screen from the Raspberry Pi using
 
 # Import all libraries needed
-import sys                      # library for controlling System-specific parameters and functions
-import os                       # library of Miscellaneous operating system interfaces
-from subprocess import Popen    # library allows for spawning new processes
-import psutil                   # library for retrieving information on running processes and system utilization
+# import sys                      # library for controlling System-specific parameters and functions
+# import os                       # library of Miscellaneous operating system interfaces
+# from subprocess import Popen    # library allows for spawning new processes
+# import psutil                   # library for retrieving information on running processes and system utilization
 import serial                   # library for basic serial communication
 import time                     # library for a delay
+import vlc
 
 
-# link phase videos file location to variables
-deepsleep = "/home/pi/Desktop/main/data/DEEPSLEEP.mov"
-phasezero = "/home/pi/Desktop/main/data/PHASE0.mov"
+previousCommand = "NONE"
+s = ""       #used fo serial
+serialFlagEvent = 0
 
-phaseoneintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
-phaseoneloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
-phaseonefailhigh = "/home/pi/Desktop/main/data/PHASE1FH.mov"
-phaseonefaillow = "/home/pi/Desktop/main/data/PHASE1FL.mov"
-phaseoneunbalanced = "/home/pi/Desktop/main/data/PHASE1UNB.mov"
+player = vlc.Instance("--verbose=2 ", "--vout", "mmal_xsplitter")
 
-phasetwointro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
-phasetwoloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
-phasetwofailhigh = "/home/pi/Desktop/main/data/PHASE2FH.mov"
-phasetwofaillow = "/home/pi/Desktop/main/data/PHASE2FL.mov"
+media_player = player.media_player_new()
 
-phasethreeintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
-phasethreeloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
-phasethreefailhigh = "/home/pi/Desktop/main/data/PHASE3FH.mov"
-phasethreefaillow = "/home/pi/Desktop/main/data/PHASE3FL.mov"
+deepsleep = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/DEEPSLEEP.mov")
+phasezero = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE0FINAL.mov")
+intro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/INTROVIDEO.mov")
 
-phasefourintro = "/home/pi/Desktop/main/data/PHASE1NITRO.mov"
-phasefourloop = "/home/pi/Desktop/main/data/PHASE1LOOP.mov"
-phasefourfailhigh = "/home/pi/Desktop/main/data/PHASE4FH.mov"
-phasefourfaillow = "/home/pi/Desktop/main/data/PHASEFL.mov"
+phaseoneintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE1INTRO-converted.mov")
+phaseoneloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE1INSTRUCT-1.mov")
+phaseonefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1HIGH.mov")
+phaseonefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1LOW.mov")
+phaseoneunbalanced = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1UNSTABLE.mov")
 
-ring = "/home/pi/Desktop/main/data/RING.mov"
+phasetwointro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE2INTRO-converted.mov")
+phasetwoloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE2INSTRUCT.mov")
+phasetwofailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE2HIGH.mov")
+phasetwofaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE2LOW.mov")
 
-complete = "/home/pi/Desktop/main/data/COMPLETE.mov"
+phasethreeintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE3INTRO-converted.mov")
+phasethreeloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE3INSTRUCT.mov")
+phasethreefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE3HIGH.mov")
+phasethreefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE3LOW.mov")
+
+phasefourintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE4INTRO-converted.mov")
+phasefourloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE4INSTRUCT.mov")
+phasefourfailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE4HIGH.mov")
+phasefourfaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE4LOW.mov")
+
+ring = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHONERING.mov")
+complete = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/SUCESS.mov")
 
 # link variable name to serial instance on raspberry pi
-# this is actually changing every now and then when power cycled between 2 locations
-# a solution must be found
-ser = serial.Serial('/dev/ttyACM1')
+try:
+    ser = serial.Serial('/dev/ttyACM1')
+except:
+    ser = serial.Serial('/dev/ttyACM0')
 
-# variable to hold active video player instances open
-players = []
+def loopVideoUntilEvent():
+    global serialFlagEvent
+    while(not ser.in_waiting):
+        while (media_player.get_position()<0.9):
+            if(ser.in_waiting): serialFilter()
+            if(serialFlagEvent): break
+            print("lVUE() WAIT")
+            print(media_player.get_position())
+            time.sleep(1)
+        media_player.set_position(0)
+    print("EVENT: END VIDEO")
+            
+def waitUntilVideoEnd():
+    global serialFlagEvent
+    media_player.set_position(0)
+    while (media_player.get_position()<0.9):
+        print("wUVE() WAIT")
+        if(ser.in_waiting):
+            print("SERIAL IN BUFFER")
+            serialFilter()
+        if(serialFlagEvent):
+            print("FLAG BREAK")
+            break
+        print(media_player.get_position())
+        time.sleep(1)
+    print("END VIDEO")
 
-# variable to hold current layer number
-n = 0
-
-#print(ser.name)    # uncomment for debug
-
-FNULL = open(os.devnull,'w')    # used by next line
-#sys.stdout = FNULL             # uncomment this line to disable serial
-
-# This function retrieves the number of currently active units of omxplayer,
-# and stores them into an array called 'procs' and returns this variable
-def getplayers():
-    procs = []
-    for p in psutil.process_iter():
-        if p.name() == 'omxplayer.bin':
-            procs.append(p)
-    return procs
-
-# This function grabs all of the processes found in getPlayers() except for the most
-# recently started process and kills them.
-def killoldplayers(procs):
-
-    # array to collect processes' start times in milliseconds since epoch
-    times = []
-
-    # only run if more than one process open of omxplayer
-    if len(procs) > 1:
-        time.sleep(0.5)
-
-        # collect times of processes
-        for p in procs:
-            times.append(p.create_time())
+def serialFilter():
+    global previousCommand
+    global s
+    global serialFlagEvent
     
-        # initialize variables to find the largest time (youngest task)
-        largest_time = 0
-        i = 0
-
-        #print("TIMES : "+str(times))                       # uncomment for debug
-        #print("len of procs before : "+str(len(procs)))    # uncomment for debug
-
-        # find largest time
-        for t in times:
-            if t > largest_time:
-                largest_time = i
-            i+=1
-
-        #print("largest time location : "+str(largest_time))   # uncomment for debug
-
-        # remove newest time from kill list
-        procs.pop(largest_time)
-        #print(procs)                                          # uncomment for debug
-
-        # kill all tasks in procs
-        for p in procs:
-            p.kill()
-                
-        #print("len of procs after : "+str(len(getplayers())))# uncomment for debug
-
-# This function begins the video name sent to it at the layer number sent as well
-def startVideo(vidName, layer):
-    Popen(['omxplayer', "--adev", "local", "--loop", "--layer","%d"%(layer), "%s"%(vidName)])
+    if ser.in_waiting:
+        s = ser.readline(100).decode()
+        print("GOT:")
+        print(s)
+            
+        if previousCommand in s:
+            return
+        else:
+            serialFlagEvent = 1
+            previousCommand = s
 
 
 # Run this forever
 while True:
-    # error handling
+    # error handlin
     try:
-
-        # restrict the existence of only one instance of omxplayer
-        players = getplayers()
-        killoldplayers(players)
-
-        if ser.in_waiting:
-            s = ser.readline(100)
-            print(s)
-
-            # iterate omxplayer layer count
-            n += 1
-
-            # check each predefined string and playits corresponding video
-            # send confirmation '1' back through serial
+        serialFilter()
+        
+        if(serialFlagEvent):
+            serialFlagEvent = 0
+            # check each predefined string and play its corresponding video
+            # send confirmation number back through serial
             if "RESPOND" in s:
                 print('response request')
-                ser.write('1')
+                ser.write('1'.encode())
             
-            elif "INTRO" in s:
-                print("intro video")
-                ser.write('1')
+            elif "INTROS" in s:
+                ser.write('2'.encode())
+                print("main intro video")
+                media_player.set_media(intro)
+                media_player.play()
+                #time.sleep(1)
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
+
 
             elif "DEEP SLEEP" in s:
                 print("deep sleep")
-                ser.write('1')
-                startVideo(deepsleep, n)
+                ser.write('4'.encode())
+
             
             elif "PHASE ZERO" in s:
-                print("phase zero")
-                ser.write('1')
-                startVideo(phasezero, n)
+                ser.write('3'.encode())
+                print("phase zero video")
+                media_player.set_media(phasezero)
+                media_player.play()
+                #media_player.set_fullscreen(1)
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE ONE INTRO" in s:
-                print("phase one intro")
-                ser.write('1')
-                startVideo(phaseoneintro, n)
+                ser.write('5'.encode())
+                print("phase one intro video")
+                media_player.set_media(phaseoneintro)
+                media_player.play()
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
             
             elif "PHASE ONE LOOP" in s:
+                ser.write('6'.encode())
                 print("phase one loop")
-                ser.write('1')
-                startVideo(phaseoneloop, n)
+                media_player.set_media(phaseoneloop)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
+
 
             elif "PHASE ONE FAIL HIGH" in s:
+                ser.write('7'.encode())
                 print("phase one fail high")
-                ser.write('1')
-                startVideo(phaseonefailhigh, n)
+                media_player.set_media(phasezero)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
 
             elif "PHASE ONE FAIL LOW" in s:
+                ser.write('8'.encode())
                 print("phase one fail low")
-                ser.write('1')
-                startVideo(phaseonefaillow, n)
+                media_player.set_media(phaseonefaillow)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
 
             elif "PHASE ONE UNBALANCED" in s:
+                ser.write('9'.encode())
                 print("phase one unbalanced")
-                ser.write('1')
-                startVideo(phaseoneunbalanced, n)
+                media_player.set_media(phaseoneunbalanced)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE TWO INTRO" in s:
                 print("phase two intro")
-                ser.write('1')
-                startVideo(phasetwointro, n)
+                ser.write('A'.encode())
+                media_player.set_media(phasetwointro)
+                media_player.play()
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
             
             elif "PHASE TWO LOOP" in s:
                 print("phase two loop")
-                ser.write('1')
-                startVideo(phasetwoloop, n)
+                ser.write('B'.encode())
+                media_player.set_media(phasetwoloop)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
+               
+                #startVideo(phasetwoloop, n)
+                #phasetwoloop.set_fullscreen(True)
+                #media_player.play_item_at_index(9)
             
             elif "PHASE TWO FAIL HIGH" in s:
                 print("phase two fail high")
-                ser.write('1')
-                startVideo(phasetwofailhigh, n)
+                ser.write('C'.encode())
+                media_player.set_media(phasetwofailhigh)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE TWO FAIL LOW" in s:
                 print("phase two fail low")
-                ser.write('1')
-                startVideo(phasetwofaillow, n)
+                ser.write('D'.encode())
+                media_player.set_media(phasetwofaillow)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE THREE INTRO" in s:
                 print("phase three intro")
-                ser.write('1')
-                startVideo(phasethreeintro, n)
-            
+                ser.write('E'.encode())
+                media_player.set_media(phasethreeintro)
+                media_player.play()
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
+                
             elif "PHASE THREE LOOP" in s:
                 print("phase three loop")
-                ser.write('1')
-                startVideo(phasethreeloop, n)
+                ser.write('F'.encode())
+                media_player.set_media(phasethreeloop)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
+               
+                #startVideo(phasethreeloop, n)
+                #phasethreeloop.set_fullscreen(True)
+                #media_player.play_item_at_index(13)
             
             elif "PHASE THREE FAIL HIGH" in s:
                 print("phase three fail high")
-                ser.write('1')
-                startVideo(phasethreefailhigh, n)
-            
-            elif "PHASE THREE FAIL LOW" in s:
-                print("phase three fail low")
-                ser.write('1')
-                startVideo(phasethreefaillow, n)
+                ser.write('G'.encode())
+                media_player.set_media(phasethreefailhigh)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
+                
             
             elif "PHASE FOUR INTRO" in s:
                 print("phase four intro")
-                ser.write('1')
-                startVideo(phasefourintro, n)
+                ser.write('I'.encode())
+                media_player.set_media(phasefourintro)
+                media_player.play()
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
             
-            elif "PHASE FOUR LOOOP" in s:
+            elif "PHASE FOUR LOOP" in s:
                 print("phase four loop")
-                ser.write('1')
-                startVideo(phasefourloop, n)
+                ser.write('J'.encode())
+                media_player.set_media(phasefourloop)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE FOUR FAIL HIGH" in s:
                 print("phase four fail high")
-                ser.write('1')
-                startVideo(phasefourfailhigh, n)
+                ser.write('K'.encode())
+                media_player.set_media(phasefourfailhigh)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "PHASE FOUR FAIL LOW" in s:
                 print("phase four fail low")
-                ser.write('1')
-                startVideo(phasefourfaillow, n)
+                ser.write('L'.encode())
+                media_player.set_media(phasegourfaillow)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
 
             elif "RING" in s:
                 print("ring phone")
-                ser.write('1')
-                startVideo(ring, n)
+                ser.write('N'.encode())
+                media_player.set_media(ring)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
             
             elif "CRITICAL ERROR" in s:
                 print("Error, resetting...")
-                ser.write('1')
+                ser.write('1'.encode())
             
             elif "COMPLETE" in s:
                 print("completion")
-                ser.write('1')
-                startVideo(complete, n)
+                ser.write('M'.encode())
+                media_player.set_media(complete)
+                media_player.play()
+                waitUntilVideoEnd()
+                ser.write('0'.encode())
+                media_player.stop()
+                
+            elif "WAIT" in s:
+                print("wait")
+                if media_player.is_playing():
+                    ser.write('0'.encode())
+                else:
+                    ser.write('2'.encode())
+
 
     # catch all errors, print error and continue running
     except Exception as e:
         print("ERROR : "+str(e))
+        exit()
+0
