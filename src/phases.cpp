@@ -493,11 +493,11 @@ byte phaseTwo()
   // if set value shown on frahm tach and 7-seg are within error margins, continue to phase 3,
   // otherwise run failure code and repeat phase 2
   //original value: +- 3
-  if (steam - 188 < 3)
+  if (steam - 188 < 0)
   {
-    if ((steam - 188) > -3)
+    if ((steam - 188) > -4)
     {
-      setDCMotor(188);
+      setDCMotor(187);
       return 3;
     }
     failure(2, 2);

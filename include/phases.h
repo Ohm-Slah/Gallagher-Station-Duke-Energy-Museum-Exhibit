@@ -202,6 +202,8 @@ class Stepper
 
         void singleStep(bool direction) // iterate stepper position in direction given
         {
+            digitalWrite(STEPPERENPIN, LOW);   // enable stepper motor
+
             if(direction) // true = CW / false = CCW
             { 
                 digitalWrite(DIRPIN, HIGH);
@@ -212,11 +214,12 @@ class Stepper
                 digitalWrite(DIRPIN, LOW);
                 // keep track of the stepper motor position
                 stepperPosition = (stepperPosition - 1) % stepsPerRevolution;
-                if(stepperPosition = 0) stepperPosition = 200;
+                if(stepperPosition == 0) stepperPosition = 200;
             }
 
             digitalWrite(STEPPIN, HIGH);
-            delayMicroseconds(100);   // allow enough clock cycles to set STEPPIN to 5V
+            delay(2000);
+            //delayMicroseconds(100);   // allow enough clock cycles to set STEPPIN to 5V
             digitalWrite(STEPPIN, LOW);
         }
 
@@ -229,7 +232,7 @@ class Stepper
             {
                 singleStep(false);
                 updateLEDS();
-                delay(5);   // change delay to change speed of motor
+                delay(2000);   // change delay to change speed of motor
             }
             stepperPosition = 0;
         }
