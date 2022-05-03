@@ -21,37 +21,37 @@ previousCommand = "NONE"
 s = ""       #used fo serial
 serialFlagEvent = 0
 
-player = vlc.Instance("--verbose=2 ", "--vout", "mmal_xsplitter")
+player = vlc.Instance("--verbose=0", "--vout=any")
 
 media_player = player.media_player_new()
 
-deepsleep = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/DEEPSLEEP.mov")
-phasezero = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE0FINAL.mov")
-intro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/INTROVIDEO.mov")
+#deepsleep = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/DEEPSLEEP.mov")
+phasezero = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase0.mp4")
+intro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/IntroVideo.mp4")
 
-phaseoneintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE1INTRO-converted.mov")
-phaseoneloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE1INSTRUCT-1.mov")
-phaseonefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1HIGH.mov")
-phaseonefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1LOW.mov")
-phaseoneunbalanced = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1UNSTABLE.mov")
+phaseoneintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase1intro.mp4")
+phaseoneloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase1instruct.mp4")
+phaseonefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase1high.mp4")
+phaseonefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase1low.mp4")
+#phaseoneunbalanced = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE1UNSTABLE.mov")
 
-phasetwointro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE2INTRO-converted.mov")
-phasetwoloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE2INSTRUCT.mov")
-phasetwofailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE2HIGH.mov")
-phasetwofaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE2LOW.mov")
+phasetwointro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase2intro.mp4")
+phasetwoloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase2intruct-1.mp4")
+phasetwofailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase2high.mp4")
+phasetwofaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase2low.mp4")
 
-phasethreeintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE3INTRO-converted.mov")
-phasethreeloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE3INSTRUCT.mov")
-phasethreefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE3HIGH.mov")
-phasethreefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE3LOW.mov")
+phasethreeintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase3intro.mp4")
+phasethreeloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase3instruct.mp4")
+phasethreefailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase3high.mp4")
+phasethreefaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase3low.mp4")
 
-phasefourintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE4INTRO-converted.mov")
-phasefourloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHASE4INSTRUCT.mov")
-phasefourfailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE4HIGH.mov")
-phasefourfaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/FAILPHASE4LOW.mov")
+phasefourintro = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase4intro.mp4")
+phasefourloop = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phase4instruct.mp4")
+phasefourfailhigh = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase4high.mp4")
+phasefourfaillow = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Failphase4low.mp4")
 
-ring = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/PHONERING.mov")
-complete = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/SUCESS.mov")
+ring = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Phongring.mp4")
+complete = player.media_new("/home/pi/Desktop/Gallagher-Station-Duke-Energy-Museum-Exhibit-main/pi/videos/Success.mp4")
 
 # link variable name to serial instance on raspberry pi
 try:
@@ -62,11 +62,12 @@ except:
 def loopVideoUntilEvent():
     global serialFlagEvent
     while(not ser.in_waiting):
-        while (media_player.get_position()<0.9):
+        while (media_player.get_position()<0.95):
             if(ser.in_waiting): serialFilter()
             if(serialFlagEvent): break
             print("lVUE() WAIT")
             print(media_player.get_position())
+            print(media_player.get_state())
             time.sleep(1)
         media_player.set_position(0)
     print("EVENT: END VIDEO")
@@ -74,7 +75,7 @@ def loopVideoUntilEvent():
 def waitUntilVideoEnd():
     global serialFlagEvent
     media_player.set_position(0)
-    while (media_player.get_position()<0.9):
+    while (media_player.get_position()<0.93):
         print("wUVE() WAIT")
         if(ser.in_waiting):
             print("SERIAL IN BUFFER")
@@ -96,7 +97,7 @@ def serialFilter():
         print("GOT:")
         print(s)
             
-        if previousCommand in s:
+        if (s in previousCommand) or (s == previousCommand):
             return
         else:
             serialFlagEvent = 1
@@ -108,6 +109,9 @@ while True:
     # error handlin
     try:
         serialFilter()
+        if (media_player.get_position() == -1) and previousCommand!="NONE" and media_player.get_state() == 'State.Playing':
+            serialFlagEvent = 1
+            s = previousCommand
         
         if(serialFlagEvent):
             serialFlagEvent = 0
@@ -127,18 +131,13 @@ while True:
                 ser.write('0'.encode())
                 media_player.stop()
 
-
-            elif "DEEP SLEEP" in s:
-                print("deep sleep")
-                ser.write('4'.encode())
-
             
             elif "PHASE ZERO" in s:
                 ser.write('3'.encode())
                 print("phase zero video")
                 media_player.set_media(phasezero)
                 media_player.play()
-                #media_player.set_fullscreen(1)
+                media_player.set_fullscreen(1)
                 loopVideoUntilEvent()
                 media_player.stop()
             
@@ -175,14 +174,14 @@ while True:
                 media_player.play()
                 loopVideoUntilEvent()
                 media_player.stop()
-
-            elif "PHASE ONE UNBALANCED" in s:
-                ser.write('9'.encode())
-                print("phase one unbalanced")
-                media_player.set_media(phaseoneunbalanced)
-                media_player.play()
-                loopVideoUntilEvent()
-                media_player.stop()
+# 
+#             elif "PHASE ONE UNBALANCED" in s:
+#                 ser.write('9'.encode())
+#                 print("phase one unbalanced")
+#                 media_player.set_media(phaseoneunbalanced)
+#                 media_player.play()
+#                 loopVideoUntilEvent()
+#                 media_player.stop()
             
             elif "PHASE TWO INTRO" in s:
                 print("phase two intro")
@@ -250,6 +249,14 @@ while True:
                 loopVideoUntilEvent()
                 media_player.stop()
                 
+            elif "PHASE THREE FAIL LOW" in s:
+                print("phase three fail low")
+                ser.write('H'.encode())
+                media_player.set_media(phasethreefaillow)
+                media_player.play()
+                loopVideoUntilEvent()
+                media_player.stop()
+                
             
             elif "PHASE FOUR INTRO" in s:
                 print("phase four intro")
@@ -279,7 +286,7 @@ while True:
             elif "PHASE FOUR FAIL LOW" in s:
                 print("phase four fail low")
                 ser.write('L'.encode())
-                media_player.set_media(phasegourfaillow)
+                media_player.set_media(phasefourfaillow)
                 media_player.play()
                 loopVideoUntilEvent()
                 media_player.stop()
@@ -317,4 +324,3 @@ while True:
     except Exception as e:
         print("ERROR : "+str(e))
         exit()
-0
