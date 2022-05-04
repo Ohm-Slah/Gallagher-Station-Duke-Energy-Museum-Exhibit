@@ -457,8 +457,8 @@ byte phaseTwo()
       steam += steamRead;
       Govenor.write(0);
 
-      if (steam > 200)
-        steam = 200;
+      if (steam > 203)
+        steam = 203;
       else if (steam < 90)
         steam = 90;
 
@@ -466,7 +466,7 @@ byte phaseTwo()
 
       //map DC motor to make Hz and RPM work. Set for 61Hz and approximately 3,600 RPM
       //original values 90, 200, 30, 65
-      itoa(map(steam, 90, 200, 30, 65), cstr, 10);
+      itoa(map(steam, 90, 203, 30, 67), cstr, 10);
       for(int i=0; i<7; i++)
       {
         if(cstr[i]==0) 
@@ -479,6 +479,8 @@ byte phaseTwo()
         }
       }
       SSDisplay.display(cstr, 2);
+      //Serial.println(steam);
+      //Serial.println(cstr);
       delay(15);
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^End of Block^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
@@ -654,7 +656,7 @@ byte phaseFour()
     updateLEDS();
 
     Synchroscope.singleStep(false);
-    delay(7); // this delay will need to be adjusted to change difficulty
+    delay(5); // this delay will need to be adjusted to change difficulty
   }
 
   lastResponse = millis();

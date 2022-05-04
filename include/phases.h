@@ -218,8 +218,8 @@ class Stepper
             }
 
             digitalWrite(STEPPIN, HIGH);
-            delay(2000);
-            //delayMicroseconds(100);   // allow enough clock cycles to set STEPPIN to 5V
+            //delay(2000);
+            delayMicroseconds(100);   // allow enough clock cycles to set STEPPIN to 5V
             digitalWrite(STEPPIN, LOW);
         }
 
@@ -232,7 +232,7 @@ class Stepper
             {
                 singleStep(false);
                 updateLEDS();
-                delay(2000);   // change delay to change speed of motor
+                delay(20);   // change delay to change speed of motor
             }
             stepperPosition = 0;
         }
